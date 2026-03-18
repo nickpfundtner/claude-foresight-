@@ -1,0 +1,15 @@
+version: "3.9"
+services:
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: cipuser
+      POSTGRES_PASSWORD: cippass
+      POSTGRES_DB: cip
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:
