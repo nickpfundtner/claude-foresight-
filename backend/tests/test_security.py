@@ -64,3 +64,40 @@ def test_build_prompt_never_includes_real_name():
     assert "SecretFamily" not in prompt
     assert "secret@example.com" not in prompt
     assert "Customer #" in prompt  # anonymous ID format is used
+
+
+import uuid as _uuid
+from fastapi.testclient import TestClient
+from app.main import app
+
+client = TestClient(app)
+
+
+def test_password_too_short_rejected():
+    r = client.post("/auth/register", json={
+        "email": f"{_uuid.uuid4().hex}@t.com",
+        "password": "short1",
+        "business_name": "B"
+    })
+    assert r.status_code == 422
+
+
+def test_password_no_digit_rejected():
+    r = client.post("/auth/register", json={
+        "email": f"{_uuid.uuid4().hex}@t.com",
+        "password": "nodigitshere",
+        "business_name": "B"
+    })
+    assert r.status_code == 422
+
+
+def test_brute_force_lockout():
+    email = f"{_uuid.uuid4().hex}@t.com"
+    # register a real account
+    client.post("/auth/register", json={"email": email, "password": "Valid123", "business_name": "B"})
+    # hammer it with wrong passwords
+    for _ in range(10):
+        client.post("/auth/login", json={"email": email, "password": "wrongpassword1"})
+    # 11th attempt should be locked
+    r = client.post("/auth/login", json={"email": email, "password": "wrongpassword1"})
+    assert r.status_code == 429
