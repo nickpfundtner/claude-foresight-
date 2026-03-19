@@ -54,7 +54,7 @@ First visit: {customer_data['first_visit_at']}
 Last visit: {customer_data['last_visit_at']}
 Days since last visit: {days_since_last}
 
-Transaction history:
+Aggregate stats:
 {history_section}
 
 Return ONLY valid JSON with these exact keys:

@@ -38,6 +38,7 @@ def sync_customers(user: User, db: Session) -> int:
     client = get_square_client(decrypt_token(user.square_access_token))
     synced = 0
     cursor = None
+    had_error = False
 
     existing_customers = {
         c.square_customer_id: c
@@ -49,6 +50,7 @@ def sync_customers(user: User, db: Session) -> int:
             body = _list_customers_page(client, cursor=cursor)
         except Exception as e:
             log_error(db, "square_sync", e, user_id=user.id)
+            had_error = True
             break
 
         for sq_customer in (body.get("customers") or []):
@@ -80,7 +82,8 @@ def sync_customers(user: User, db: Session) -> int:
             break
 
     db.commit()
-    resolve_errors(db, "square_sync", user_id=user.id)
+    if not had_error:
+        resolve_errors(db, "square_sync", user_id=user.id)
     return synced
 
 
