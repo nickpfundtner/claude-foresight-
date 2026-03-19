@@ -64,3 +64,68 @@ def test_square_retry_does_not_retry_on_401():
     with pytest.raises(SquareAPIError):
         permanent_fail()
     assert call_count == 1  # never retried
+
+
+import uuid
+from app.core.errors import log_error, resolve_errors, resolve_errors_by_email
+from app.models.error_log import ErrorLog
+from app.models.user import User
+
+
+def test_log_error_creates_row(db):
+    u = User(email=f"{uuid.uuid4().hex}@t.com", hashed_password="x")
+    db.add(u)
+    db.commit()
+
+    exc = SquareAPIError("timeout", status_code=503)
+    log_error(db, "square_sync", exc, user_id=u.id)
+
+    row = db.query(ErrorLog).filter(ErrorLog.user_id == u.id).first()
+    assert row is not None
+    assert row.operation == "square_sync"
+    assert row.resolved is False
+    assert row.alert_sent is False
+    assert row.error_code == "503"  # stored as string for typed errors
+
+
+def test_log_error_stores_none_for_plain_exceptions(db):
+    u = User(email=f"{uuid.uuid4().hex}@t.com", hashed_password="x")
+    db.add(u)
+    db.commit()
+
+    log_error(db, "square_sync", Exception("something broke"), user_id=u.id)
+
+    row = db.query(ErrorLog).filter(ErrorLog.user_id == u.id).first()
+    assert row.error_code is None  # NULL, not the string "None"
+
+
+def test_resolve_errors_marks_resolved_and_resets_alert_sent(db):
+    u = User(email=f"{uuid.uuid4().hex}@t.com", hashed_password="x")
+    db.add(u)
+    db.commit()
+
+    log_error(db, "square_sync", Exception("err"), user_id=u.id)
+    # simulate alert was already sent
+    row = db.query(ErrorLog).filter(ErrorLog.user_id == u.id).first()
+    row.alert_sent = True
+    db.commit()
+
+    resolve_errors(db, "square_sync", user_id=u.id)
+
+    db.refresh(row)
+    assert row.resolved is True
+    assert row.alert_sent is False  # reset so future errors can alert again
+
+
+def test_resolve_errors_by_email_clears_null_user_id_rows(db):
+    email = f"{uuid.uuid4().hex}@t.com"
+    log_error(db, "auth_login", Exception("bad pw"), context={"email": email})
+
+    resolve_errors_by_email(db, "auth_login", email=email)
+
+    row = db.query(ErrorLog).filter(
+        ErrorLog.operation == "auth_login",
+        ErrorLog.context["email"].astext == email,
+    ).first()
+    assert row.resolved is True
+    assert row.alert_sent is False
