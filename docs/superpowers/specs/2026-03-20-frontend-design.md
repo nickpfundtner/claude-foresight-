@@ -103,12 +103,20 @@ Phase 1 frontend for Foresight — a customer intelligence SaaS for small busine
 Customer table rows: `GET /dashboard/customers` → array of `CustomerSummary`
 
 ### Auth Flow — Middleware Note
-Next.js middleware runs in the Edge Runtime which has no access to `localStorage`. The JWT is therefore mirrored in an **`httpOnly` cookie** (`foresight_token`) on login/register success. Middleware reads the cookie to guard routes. Zustand still holds the in-memory token for use by the Axios interceptor. On logout, both the Zustand store and the cookie are cleared.
+Next.js middleware runs in the Edge Runtime which has no access to `localStorage`. The JWT is therefore mirrored in an **`httpOnly` cookie** (`foresight_token`) via a Next.js API Route that acts as a token relay.
+
+**Cookie set mechanism (required — no backend change needed):**
+- Login/register form POSTs credentials to the FastAPI backend directly → receives `{ access_token }` in response body
+- Frontend immediately POSTs `{ token }` to the Next.js API route `POST /api/auth/token`
+- That route responds with `Set-Cookie: foresight_token=<token>; HttpOnly; SameSite=Strict; Path=/`
+- Middleware reads `foresight_token` cookie to guard routes
+- On logout, frontend calls `DELETE /api/auth/token` → route clears the cookie; Zustand store is also cleared client-side
 
 ### Folder Structure
 ```
 frontend/
   app/
+    page.tsx              ← root: server component, reads cookie, redirects to /dashboard or /login
     (auth)/
       login/page.tsx
       register/page.tsx
@@ -119,6 +127,9 @@ frontend/
       layout.tsx          ← sidebar + auth guard
       dashboard/page.tsx
       customers/[id]/page.tsx
+    api/
+      auth/
+        token/route.ts    ← POST: set httpOnly cookie; DELETE: clear cookie
   components/
     layout/Sidebar.tsx
     dashboard/StatCard.tsx
@@ -290,9 +301,11 @@ POST /outreach/{customer_id}/send
 
 POST /outreach/batch
   Request:  { customer_ids: string[], auto_send: boolean }
-            auto_send=false → generate drafts only, return list
+            auto_send=false → generate drafts only, return list for review
             auto_send=true  → generate + send without review
   Response: { drafts: [{ customer_id, draft, subject }], sent_count: number }
+            drafts is always populated regardless of auto_send, so the UI can
+            show a confirmation of what was sent. sent_count=0 when auto_send=false.
 ```
 
 ---
