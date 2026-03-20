@@ -66,12 +66,14 @@ Phase 1 frontend for Foresight — a customer intelligence SaaS for small busine
 
 ```
 /                         → redirect: /dashboard if authed, /login if not
-/login                    → Login page
-/register                 → Register page
-/connect                  → Square integration setup (post-register)
-/dashboard                → Main dashboard
-/customers/[id]           → Customer profile + AI Outreach
+/login                    → Login page (unauthenticated)
+/register                 → Register page (unauthenticated)
+/connect                  → Square integration setup — onboarding, no sidebar
+/dashboard                → Main dashboard (authenticated, sidebar)
+/customers/[id]           → Customer profile + AI Outreach (authenticated, sidebar)
 ```
+
+`/connect` lives in an `(onboarding)` route group with a minimal layout (logo + progress only — no sidebar). It is reached after registration and before the main app. Authenticated users who have already connected can reach it from Settings.
 
 ---
 
@@ -85,9 +87,23 @@ Phase 1 frontend for Foresight — a customer intelligence SaaS for small busine
 
 ### Data Layer
 - All server state managed by React Query
-- Query keys: `['overview']`, `['customers']`, `['customer', id]`, `['prediction', id]`
+- Query keys: `['overview']`, `['customers']`, `['prediction', id]`
 - Stale time: 5 minutes for predictions, 1 minute for dashboard overview
 - Background refetch on window focus
+
+**Endpoint → Stat Card mapping:**
+
+| Stat Card | Endpoint | Field |
+|-----------|----------|-------|
+| Total Customers | `GET /dashboard/overview` | `total_customers` |
+| High Churn Risk | `GET /dashboard/overview` | `high_risk_count` |
+| Total Revenue | `GET /dashboard/overview` | `total_revenue` |
+| Avg Visits/Customer | `GET /dashboard/overview` | `avg_visits_per_customer` |
+
+Customer table rows: `GET /dashboard/customers` → array of `CustomerSummary`
+
+### Auth Flow — Middleware Note
+Next.js middleware runs in the Edge Runtime which has no access to `localStorage`. The JWT is therefore mirrored in an **`httpOnly` cookie** (`foresight_token`) on login/register success. Middleware reads the cookie to guard routes. Zustand still holds the in-memory token for use by the Axios interceptor. On logout, both the Zustand store and the cookie are cleared.
 
 ### Folder Structure
 ```
@@ -96,10 +112,12 @@ frontend/
     (auth)/
       login/page.tsx
       register/page.tsx
+    (onboarding)/
+      layout.tsx          ← minimal: logo + progress, no sidebar
+      connect/page.tsx
     (app)/
       layout.tsx          ← sidebar + auth guard
       dashboard/page.tsx
-      connect/page.tsx
       customers/[id]/page.tsx
   components/
     layout/Sidebar.tsx
@@ -135,9 +153,16 @@ frontend/
 - Success: plays ascending C-E-G tone, redirects
 
 ### `/connect`
-- Square OAuth connect flow
-- Shows connected integrations with glow status indicators
-- "Sync Now" button triggers manual sync, progress toast
+Square integration onboarding. No sidebar — minimal layout.
+
+**Connect flow:**
+1. User clicks "Connect Square" → frontend calls `POST /square/connect` with `{ access_token: string }` (the Square OAuth token obtained from Square's OAuth redirect)
+2. Backend stores token, returns `{ connected: true, merchant_name: string }`
+3. UI shows success state with merchant name and a "Sync Now" button
+4. "Sync Now" calls `POST /square/sync` (no body) → backend syncs customers + transactions → returns `{ synced_customers: number, synced_transactions: number }`
+5. On sync success: toast + redirect to `/dashboard`
+
+**Square OAuth redirect:** Square redirects back to `/connect?code=<auth_code>`. The frontend exchanges the code for an access token via a backend endpoint (Phase 2 — for now, user pastes their Square access token manually in a text field). This simplification must be clearly shown in the UI with helper text.
 
 ### `/dashboard`
 Four stat cards (coral shades, animated counters on load):
@@ -161,13 +186,42 @@ AI Outreach strip (bottom of dashboard):
 - "Generate All Outreach" button → batch draft generation
 
 ### `/customers/[id]`
-- Full customer profile: visit history, spend breakdown, top products
-- AI prediction card: churn risk score, predicted next visit, lifetime value, insight summary
+**Data source:** No dedicated `GET /customers/{id}` endpoint exists. Individual customer data is sourced by:
+1. Reading from the React Query cache for `['customers']` (already fetched on dashboard) — find by `id`
+2. If cache is empty, call `GET /dashboard/customers` and find the matching entry
+3. Prediction detail comes from `GET /predictions/{customer_id}`
+
+`CustomerSummary` fields available: `id, name, email, total_visits, total_spent, last_visit_at, churn_risk, churn_risk_score`
+`PredictionResponse` fields available: `customer_id, customer_name, churn_risk, churn_risk_score, predicted_next_visit_days, predicted_ltv, top_products, insight_summary, generated_at`
+
+**Prediction state handling:**
+- If `GET /predictions/{customer_id}` returns 404 → show "No prediction yet" state with a "Generate Prediction" button that calls `POST /predictions/{customer_id}/refresh`
+- If prediction exists but `generated_at` is > 7 days old → show a "Refresh" button that calls `POST /predictions/{customer_id}/refresh`; button triggers the AI-generating sound sweep; on success React Query invalidates `['prediction', id]`
+- Loading state: skeleton cards (see Loading States section)
+
+- AI prediction card: churn risk score, predicted next visit (`predicted_next_visit_days` formatted as "in X days"), lifetime value (`predicted_ltv` as currency), `top_products` as tag chips, `insight_summary` as prose
 - **AI Outreach Panel:**
   - **Default mode (manual confirm):** Generate button → AI drafts message → owner reads draft → manually confirms → sends
   - **Auto mode (toggle):** AI generates + sends without manual step. Toggle is clearly labeled and off by default.
   - Message channel: Email (Phase 1), SMS (Phase 2)
   - Draft shown in a styled textarea with coral border glow
+
+---
+
+## Loading & Skeleton States
+
+All pages use skeleton placeholders (dark surface with a subtle shimmer animation) while data loads. Never show a spinner — skeletons maintain layout stability.
+
+| Component | Loading state |
+|-----------|--------------|
+| Stat cards | 4 skeleton cards: same size, coral shimmer bar in place of value |
+| Line chart | Empty axes visible immediately; line animates in as data arrives |
+| Bar chart | Bar outlines at 0 height, grow in as data arrives |
+| Customer table | 5 skeleton rows with placeholder widths per column |
+| Customer profile | Skeleton for name/email, skeleton prediction card |
+| Prediction card (no prediction) | "No prediction yet" empty state with "Generate" button |
+
+Shimmer: `background: linear-gradient(90deg, var(--surface) 25%, rgba(255,96,64,0.06) 50%, var(--surface) 75%)` animated `background-position` over 1.5s.
 
 ---
 
@@ -185,6 +239,8 @@ All sounds synthesized via Web Audio API (no external files). Frequencies in the
 | Error | 220 Hz | sine | 200ms | Low frequency = alert without harshness |
 
 Gain envelope: linear attack (8ms) → exponential decay. Avoids click artifact on stop.
+
+**Mute toggle:** A sound on/off toggle is available in the sidebar footer (icon button). Preference stored in `localStorage`. When muted, all `playTone()` calls are no-ops. Default: on. This prevents hover sounds from becoming irritating during extended table browsing.
 
 ---
 
@@ -220,11 +276,23 @@ Baked into the UI based on behavioral science research:
 3. No manual review step
 4. Confirmation toast shows what was sent
 
-### Backend endpoint needed (new)
+### Backend endpoints needed (new — Phase 1)
+
 ```
-POST /outreach/{customer_id}/generate   → returns { draft: string, channel: 'email'|'sms' }
-POST /outreach/{customer_id}/send       → sends the (optionally edited) draft
-POST /outreach/batch                    → generates + optionally auto-sends for N customers
+POST /outreach/{customer_id}/generate
+  Request:  {} (no body — customer data read from DB by backend)
+  Response: { draft: string, subject: string, channel: "email" }
+
+POST /outreach/{customer_id}/send
+  Request:  { draft: string, subject: string, channel: "email" }
+            (draft may be the original or user-edited version)
+  Response: { sent: true, recipient: string }
+
+POST /outreach/batch
+  Request:  { customer_ids: string[], auto_send: boolean }
+            auto_send=false → generate drafts only, return list
+            auto_send=true  → generate + send without review
+  Response: { drafts: [{ customer_id, draft, subject }], sent_count: number }
 ```
 
 ---
