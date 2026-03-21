@@ -10,6 +10,7 @@ from app.square.router import router as square_router
 from app.predictions.router import router as predictions_router
 from app.dashboard.router import router as dashboard_router
 from app.predictions.scheduler import start_scheduler
+from app.outreach.router import router as outreach_router
 
 
 @asynccontextmanager
@@ -25,7 +26,7 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=["http://localhost:5173", "http://localhost:3000"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -54,6 +55,7 @@ app.include_router(auth_router)
 app.include_router(square_router)
 app.include_router(predictions_router)
 app.include_router(dashboard_router)
+app.include_router(outreach_router)
 
 
 @app.get("/health")
