@@ -47,7 +47,7 @@ def generate_draft(customer_id: str, db: Session, current_user_id: str) -> Outre
 
     client = anthropic.Anthropic()
     message = client.messages.create(
-        model="claude-opus-4-6",
+        model="claude-haiku-4-5-20251001",
         max_tokens=256,
         messages=[{"role": "user", "content": prompt}],
     )
@@ -65,7 +65,9 @@ def send_draft(customer_id: str, draft: str, subject: str, db: Session, current_
     if not customer:
         raise ValueError(f"Customer {customer_id} not found")
 
-    recipient = customer.email or "unknown@example.com"
+    if not customer.email:
+        raise ValueError(f"Customer {customer_id} has no email address")
+    recipient = customer.email
     # Phase 1: log to stdout only (SMTP in Phase 2)
     print(f"[OUTREACH] To: {recipient} | Subject: {subject}\n{draft}")
 
