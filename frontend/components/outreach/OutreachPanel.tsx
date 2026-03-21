@@ -9,11 +9,13 @@ interface Props {
   customerId: string
   customerName: string
   onClose: () => void
+  initialDraft?: string
+  initialSubject?: string
 }
 
-export default function OutreachPanel({ customerId, customerName, onClose }: Props) {
-  const [draft, setDraft] = useState('')
-  const [subject, setSubject] = useState('')
+export default function OutreachPanel({ customerId, customerName, onClose, initialDraft = '', initialSubject = '' }: Props) {
+  const [draft, setDraft] = useState(initialDraft)
+  const [subject, setSubject] = useState(initialSubject)
   const [autoMode, setAutoMode] = useState(false)
   const [loading, setLoading] = useState(false)
   const [sent, setSent] = useState(false)

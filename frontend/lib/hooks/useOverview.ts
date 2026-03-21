@@ -14,5 +14,6 @@ export function useOverview() {
     queryFn: () => api.get('/dashboard/overview').then((r) => r.data),
     staleTime: 60_000,
     refetchOnWindowFocus: true,
+    retry: false,
   })
 }

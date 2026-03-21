@@ -17,5 +17,6 @@ export function useCustomers() {
     queryKey: ['customers'],
     queryFn: () => api.get('/dashboard/customers').then((r) => r.data),
     staleTime: 60_000,
+    retry: false,
   })
 }

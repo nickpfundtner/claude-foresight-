@@ -104,6 +104,8 @@ export default function DashboardPage() {
                 key={d.customer_id}
                 customerId={d.customer_id}
                 customerName={customer.name}
+                initialDraft={d.draft}
+                initialSubject={d.subject}
                 onClose={() => setBatchDrafts((prev) => prev.filter((x) => x.customer_id !== d.customer_id))}
               />
             ) : null
