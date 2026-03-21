@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Foresight — Interactive Mockup</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #060810;
+    color: #e2e8f0;
+    font-family: -apple-system, 'Inter', BlinkMacSystemFont, sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* SIDEBAR */
+  .layout { display: flex; min-height: 100vh; }
+
+  .sidebar {
+    width: 220px;
+    background: rgba(10,12,24,0.95);
+    border-right: 1px solid rgba(99,102,241,0.12);
+    padding: 24px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex-shrink: 0;
+    backdrop-filter: blur(20px);
+  }
+
+  .logo {
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    padding: 0 8px 20px;
+    background: linear-gradient(135deg, #f97316, #fb923c);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    font-size: 13.5px;
+    font-weight: 500;
+    color: #64748b;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    border: 1px solid transparent;
+    position: relative;
+    overflow: hidden;
+    user-select: none;
+  }
+
+  .nav-item::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(99,102,241,0.08), rgba(139,92,246,0.04));
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+
+  .nav-item:hover { color: #c4b5fd; border-color: rgba(99,102,241,0.15); }
+  .nav-item:hover::before { opacity: 1; }
+
+  .nav-item.active {
+    color: #a5b4fc;
+    background: rgba(99,102,241,0.1);
+    border-color: rgba(99,102,241,0.25);
+    box-shadow: 0 0 20px rgba(99,102,241,0.08), inset 0 0 20px rgba(99,102,241,0.03);
+  }
+
+  .nav-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: currentColor;
+    opacity: 0.5;
+  }
+
+  .nav-item.active .nav-dot { background: #818cf8; opacity: 1; box-shadow: 0 0 6px #818cf8; }
+
+  /* MAIN */
+  .main {
+    flex: 1;
+    padding: 32px;
+    overflow-y: auto;
+  }
+
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 32px;
+  }
+
+  .page-title {
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    background: linear-gradient(135deg, #f8fafc 30%, #94a3b8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .page-sub {
+    font-size: 13px;
+    color: #475569;
+    margin-top: 2px;
+  }
+
+  /* BUTTONS */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 10px 18px;
+    border-radius: 10px;
+    font-size: 13.5px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: all 0.12s ease;
+    user-select: none;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(255,255,255,0);
+    transition: background 0.1s;
+  }
+
+  .btn:active { transform: scale(0.96); }
+  .btn:active::after { background: rgba(255,255,255,0.08); }
+
+  .btn-primary {
+    background: linear-gradient(135deg, #f97316, #ea580c);
+    color: #fff;
+    box-shadow: 0 4px 20px rgba(249,115,22,0.35), 0 1px 0 rgba(255,255,255,0.1) inset;
+  }
+
+  .btn-primary:hover {
+    background: linear-gradient(135deg, #fb923c, #f97316);
+    box-shadow: 0 6px 28px rgba(249,115,22,0.45), 0 1px 0 rgba(255,255,255,0.1) inset;
+    transform: translateY(-1px);
+  }
+
+  .btn-ghost {
+    background: rgba(99,102,241,0.08);
+    color: #a5b4fc;
+    border: 1px solid rgba(99,102,241,0.2);
+    box-shadow: 0 0 20px rgba(99,102,241,0.05);
+  }
+
+  .btn-ghost:hover {
+    background: rgba(99,102,241,0.14);
+    border-color: rgba(99,102,241,0.35);
+    box-shadow: 0 0 24px rgba(99,102,241,0.12);
+  }
+
+  /* STAT CARDS */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+
+  .stat-card {
+    background: rgba(15,18,35,0.8);
+    border: 1px solid rgba(99,102,241,0.1);
+    border-radius: 14px;
+    padding: 20px;
+    backdrop-filter: blur(20px);
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(99,102,241,0.4), transparent);
+  }
+
+  .stat-card:hover {
+    border-color: rgba(99,102,241,0.25);
+    box-shadow: 0 8px 32px rgba(99,102,241,0.08), 0 0 0 1px rgba(99,102,241,0.08);
+    transform: translateY(-2px);
+  }
+
+  .stat-label {
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: #475569;
+    margin-bottom: 10px;
+  }
+
+  .stat-value {
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: -1px;
+    color: #f8fafc;
+    margin-bottom: 10px;
+    line-height: 1;
+  }
+
+  .stat-bar {
+    height: 3px;
+    background: rgba(99,102,241,0.1);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .stat-bar-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .stat-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 6px;
+    margin-top: 8px;
+  }
+
+  /* RISK BADGE */
+  .risk-high { background: rgba(239,68,68,0.12); color: #f87171; border: 1px solid rgba(239,68,68,0.2); }
+  .risk-medium { background: rgba(249,115,22,0.12); color: #fb923c; border: 1px solid rgba(249,115,22,0.2); }
+  .risk-low { background: rgba(34,197,94,0.12); color: #4ade80; border: 1px solid rgba(34,197,94,0.2); }
+
+  /* CUSTOMER TABLE */
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+
+  .section-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #cbd5e1;
+    letter-spacing: -0.2px;
+  }
+
+  .table-wrap {
+    background: rgba(10,12,24,0.7);
+    border: 1px solid rgba(99,102,241,0.1);
+    border-radius: 14px;
+    overflow: hidden;
+    backdrop-filter: blur(20px);
+  }
+
+  .table-head {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+    padding: 12px 20px;
+    border-bottom: 1px solid rgba(99,102,241,0.08);
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    color: #334155;
+  }
+
+  .table-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+    padding: 14px 20px;
+    border-bottom: 1px solid rgba(99,102,241,0.05);
+    font-size: 13.5px;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.12s ease;
+    position: relative;
+  }
+
+  .table-row::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 0;
+    background: linear-gradient(90deg, rgba(249,115,22,0.15), transparent);
+    transition: width 0.15s ease;
+  }
+
+  .table-row:hover { background: rgba(99,102,241,0.04); }
+  .table-row:hover::before { width: 3px; }
+  .table-row:last-child { border-bottom: none; }
+
+  .customer-name { font-weight: 600; color: #e2e8f0; display: flex; align-items: center; gap: 10px; }
+  .customer-email { font-size: 11px; color: #475569; }
+  .avatar {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  .col-value { color: #94a3b8; font-size: 13px; }
+  .col-money { color: #e2e8f0; font-weight: 600; }
+
+  /* TABS */
+  .tabs {
+    display: flex;
+    gap: 4px;
+    background: rgba(10,12,24,0.6);
+    border: 1px solid rgba(99,102,241,0.1);
+    border-radius: 12px;
+    padding: 4px;
+    margin-bottom: 28px;
+    width: fit-content;
+    backdrop-filter: blur(20px);
+  }
+
+  .tab {
+    padding: 8px 18px;
+    border-radius: 9px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #475569;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    border: 1px solid transparent;
+    user-select: none;
+  }
+
+  .tab:hover { color: #94a3b8; }
+
+  .tab.active {
+    background: rgba(99,102,241,0.12);
+    color: #a5b4fc;
+    border-color: rgba(99,102,241,0.25);
+    box-shadow: 0 0 16px rgba(99,102,241,0.1), inset 0 0 12px rgba(99,102,241,0.04);
+  }
+
+  /* RIPPLE */
+  @keyframes ripple {
+    to { transform: scale(4); opacity: 0; }
+  }
+
+  .ripple-effect {
+    position: absolute;
+    border-radius: 50%;
+    width: 20px; height: 20px;
+    background: rgba(249,115,22,0.4);
+    transform: scale(0);
+    animation: ripple 0.5s linear;
+    pointer-events: none;
+  }
+
+  .ripple-ghost {
+    background: rgba(99,102,241,0.35);
+  }
+
+  /* GLOW PULSE */
+  @keyframes glowPulse {
+    0% { box-shadow: 0 4px 20px rgba(249,115,22,0.35); }
+    50% { box-shadow: 0 4px 32px rgba(249,115,22,0.6), 0 0 60px rgba(249,115,22,0.2); }
+    100% { box-shadow: 0 4px 20px rgba(249,115,22,0.35); }
+  }
+
+  .btn-primary:hover { animation: glowPulse 2s ease infinite; }
+
+  /* PARTICLE */
+  .particle {
+    position: fixed;
+    pointer-events: none;
+    border-radius: 50%;
+    animation: floatUp 0.8s ease-out forwards;
+    z-index: 9999;
+  }
+
+  @keyframes floatUp {
+    0% { transform: translateY(0) scale(1); opacity: 1; }
+    100% { transform: translateY(-60px) scale(0); opacity: 0; }
+  }
+
+  /* TOAST */
+  .toast {
+    position: fixed;
+    bottom: 28px;
+    right: 28px;
+    background: rgba(15,18,35,0.95);
+    border: 1px solid rgba(99,102,241,0.25);
+    border-radius: 12px;
+    padding: 14px 20px;
+    font-size: 13.5px;
+    font-weight: 500;
+    color: #e2e8f0;
+    backdrop-filter: blur(20px);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4), 0 0 0 1px rgba(99,102,241,0.1);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transform: translateY(80px);
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    z-index: 1000;
+  }
+
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast-dot { width: 8px; height: 8px; border-radius: 50%; background: #f97316; box-shadow: 0 0 8px #f97316; }
+
+  /* SCORE RING */
+  .score-ring {
+    position: relative;
+    width: 52px; height: 52px;
+  }
+
+  .score-ring svg { transform: rotate(-90deg); }
+  .score-ring-label {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 800;
+    color: #f8fafc;
+  }
+
+  /* SOUND NOTE */
+  .sound-note {
+    position: fixed;
+    pointer-events: none;
+    font-size: 11px;
+    font-weight: 700;
+    color: #f97316;
+    animation: noteFloat 0.8s ease-out forwards;
+    z-index: 9999;
+  }
+
+  @keyframes noteFloat {
+    0% { transform: translateY(0) scale(0.5); opacity: 1; }
+    100% { transform: translateY(-50px) scale(1); opacity: 0; }
+  }
+</style>
+</head>
+<body>
+
+<div class="layout">
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="logo">Foresight</div>
+    <div class="nav-item active" onclick="playNav(this)">
+      <div class="nav-dot"></div> Dashboard
+    </div>
+    <div class="nav-item" onclick="playNav(this)">
+      <div class="nav-dot"></div> Customers
+    </div>
+    <div class="nav-item" onclick="playNav(this)">
+      <div class="nav-dot"></div> Predictions
+    </div>
+    <div class="nav-item" onclick="playNav(this)">
+      <div class="nav-dot"></div> Integrations
+    </div>
+    <div class="nav-item" onclick="playNav(this)">
+      <div class="nav-dot"></div> Reports
+    </div>
+    <div style="margin-top:auto; padding-top:20px; border-top: 1px solid rgba(99,102,241,0.08);">
+      <div class="nav-item" onclick="playNav(this)">
+        <div class="nav-dot"></div> Settings
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <div class="main">
+    <div class="topbar">
+      <div>
+        <div class="page-title">Dashboard</div>
+        <div class="page-sub">Thursday, March 19 · Bella's Salon & Co.</div>
+      </div>
+      <div style="display:flex; gap:10px; align-items:center;">
+        <button class="btn btn-ghost" onclick="playClick(this, event)">Sync Square</button>
+        <button class="btn btn-primary" onclick="playSuccess(this, event); spawnParticles(event)">
+          Run Predictions
+        </button>
+      </div>
+    </div>
+
+    <!-- TABS -->
+    <div class="tabs">
+      <div class="tab active" onclick="playTab(this)">Overview</div>
+      <div class="tab" onclick="playTab(this)">At-Risk</div>
+      <div class="tab" onclick="playTab(this)">Loyal</div>
+      <div class="tab" onclick="playTab(this)">New</div>
+    </div>
+
+    <!-- STATS -->
+    <div class="stats-grid">
+      <div class="stat-card" onclick="playTick(this, event)">
+        <div class="stat-label">Total Customers</div>
+        <div class="stat-value">248</div>
+        <div class="stat-bar"><div class="stat-bar-fill" style="width:72%; background: linear-gradient(90deg,#6366f1,#8b5cf6);"></div></div>
+        <div class="stat-badge" style="background:rgba(99,102,241,0.1);color:#818cf8;border:1px solid rgba(99,102,241,0.2);">+12 this month</div>
+      </div>
+      <div class="stat-card" onclick="playTick(this, event)">
+        <div class="stat-label">Total Revenue</div>
+        <div class="stat-value">$38.4k</div>
+        <div class="stat-bar"><div class="stat-bar-fill" style="width:85%; background: linear-gradient(90deg,#f97316,#fb923c);"></div></div>
+        <div class="stat-badge" style="background:rgba(249,115,22,0.1);color:#fb923c;border:1px solid rgba(249,115,22,0.2);">+$4.2k vs last mo</div>
+      </div>
+      <div class="stat-card" onclick="playTick(this, event)">
+        <div class="stat-label">High Churn Risk</div>
+        <div class="stat-value">31</div>
+        <div class="stat-bar"><div class="stat-bar-fill" style="width:31%; background: linear-gradient(90deg,#ef4444,#f87171);"></div></div>
+        <div class="stat-badge risk-high">Needs attention</div>
+      </div>
+      <div class="stat-card" onclick="playTick(this, event)">
+        <div class="stat-label">Avg Visits / Customer</div>
+        <div class="stat-value">6.2</div>
+        <div class="stat-bar"><div class="stat-bar-fill" style="width:55%; background: linear-gradient(90deg,#22d3ee,#06b6d4);"></div></div>
+        <div class="stat-badge" style="background:rgba(34,211,238,0.1);color:#22d3ee;border:1px solid rgba(34,211,238,0.2);">Above avg</div>
+      </div>
+    </div>
+
+    <!-- CUSTOMER TABLE -->
+    <div class="section-header">
+      <div class="section-title">Customer Intelligence</div>
+      <button class="btn btn-ghost" style="font-size:12px;padding:7px 14px;" onclick="playClick(this, event)">Export CSV</button>
+    </div>
+
+    <div class="table-wrap">
+      <div class="table-head">
+        <span>Customer</span>
+        <span>Visits</span>
+        <span>Spent</span>
+        <span>Last Visit</span>
+        <span>Churn Risk</span>
+      </div>
+
+      <div class="table-row" onclick="playRow(this, event)">
+        <div class="customer-name">
+          <div class="avatar" style="background:linear-gradient(135deg,#f97316,#ea580c);">SJ</div>
+          <div><div>Sarah Johnson</div><div class="customer-email">sarah@email.com</div></div>
+        </div>
+        <div class="col-value">14</div>
+        <div class="col-money">$1,240</div>
+        <div class="col-value">32d ago</div>
+        <div><span class="stat-badge risk-high">HIGH</span></div>
+      </div>
+
+      <div class="table-row" onclick="playRow(this, event)">
+        <div class="customer-name">
+          <div class="avatar" style="background:linear-gradient(135deg,#8b5cf6,#7c3aed);">MW</div>
+          <div><div>Marcus Williams</div><div class="customer-email">marcus@email.com</div></div>
+        </div>
+        <div class="col-value">9</div>
+        <div class="col-money">$890</div>
+        <div class="col-value">18d ago</div>
+        <div><span class="stat-badge risk-medium">MED</span></div>
+      </div>
+
+      <div class="table-row" onclick="playRow(this, event)">
+        <div class="customer-name">
+          <div class="avatar" style="background:linear-gradient(135deg,#22d3ee,#06b6d4);">PL</div>
+          <div><div>Priya Lalwani</div><div class="customer-email">priya@email.com</div></div>
+        </div>
+        <div class="col-value">27</div>
+        <div class="col-money">$3,410</div>
+        <div class="col-value">3d ago</div>
+        <div><span class="stat-badge risk-low">LOW</span></div>
+      </div>
+
+      <div class="table-row" onclick="playRow(this, event)">
+        <div class="customer-name">
+          <div class="avatar" style="background:linear-gradient(135deg,#4ade80,#16a34a);">DK</div>
+          <div><div>David Kim</div><div class="customer-email">david@email.com</div></div>
+        </div>
+        <div class="col-value">19</div>
+        <div class="col-money">$2,180</div>
+        <div class="col-value">7d ago</div>
+        <div><span class="stat-badge risk-low">LOW</span></div>
+      </div>
+
+      <div class="table-row" onclick="playRow(this, event)">
+        <div class="customer-name">
+          <div class="avatar" style="background:linear-gradient(135deg,#f43f5e,#e11d48);">AT</div>
+          <div><div>Aisha Thompson</div><div class="customer-email">aisha@email.com</div></div>
+        </div>
+        <div class="col-value">5</div>
+        <div class="col-money">$420</div>
+        <div class="col-value">41d ago</div>
+        <div><span class="stat-badge risk-high">HIGH</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <div class="toast-dot"></div>
+  <span id="toast-msg">Predictions complete — 3 customers flagged</span>
+</div>
+
+<script>
+// ── AUDIO ENGINE ──────────────────────────────────────────────────────────────
+const AC = new (window.AudioContext || window.webkitAudioContext)();
+
+function resume() { if (AC.state === 'suspended') AC.resume(); }
+
+// Soft click: short noise burst + tiny sine blip (< 20ms)
+function playClick(el, e) {
+  resume();
+  addRipple(el, e, 'ripple-ghost');
+
+  const now = AC.currentTime;
+  // High tick
+  const osc = AC.createOscillator();
+  const gain = AC.createGain();
+  osc.connect(gain); gain.connect(AC.destination);
+  osc.frequency.setValueAtTime(900, now);
+  osc.frequency.exponentialRampToValueAtTime(600, now + 0.04);
+  gain.gain.setValueAtTime(0.12, now);
+  gain.gain.exponentialRampToValueAtTime(0.001, now + 0.06);
+  osc.type = 'sine';
+  osc.start(now); osc.stop(now + 0.07);
+}
+
+// Nav click: soft thump
+function playNav(el) {
+  resume();
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  el.classList.add('active');
+
+  const now = AC.currentTime;
+  const osc = AC.createOscillator();
+  const gain = AC.createGain();
+  osc.connect(gain); gain.connect(AC.destination);
+  osc.frequency.setValueAtTime(520, now);
+  osc.frequency.exponentialRampToValueAtTime(380, now + 0.08);
+  gain.gain.setValueAtTime(0.1, now);
+  gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+  osc.type = 'sine';
+  osc.start(now); osc.stop(now + 0.12);
+}
+
+// Tab click: crisp mid ping
+function playTab(el) {
+  resume();
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+
+  const now = AC.currentTime;
+  const osc = AC.createOscillator();
+  const gain = AC.createGain();
+  osc.connect(gain); gain.connect(AC.destination);
+  osc.frequency.setValueAtTime(740, now);
+  osc.frequency.exponentialRampToValueAtTime(540, now + 0.07);
+  gain.gain.setValueAtTime(0.1, now);
+  gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+  osc.type = 'triangle';
+  osc.start(now); osc.stop(now + 0.1);
+}
+
+// Row click: subtle low tick
+function playRow(el, e) {
+  resume();
+  const now = AC.currentTime;
+  const osc = AC.createOscillator();
+  const gain = AC.createGain();
+  osc.connect(gain); gain.connect(AC.destination);
+  osc.frequency.setValueAtTime(660, now);
+  osc.frequency.exponentialRampToValueAtTime(480, now + 0.05);
+  gain.gain.setValueAtTime(0.07, now);
+  gain.gain.exponentialRampToValueAtTime(0.001, now + 0.07);
+  osc.type = 'sine';
+  osc.start(now); osc.stop(now + 0.08);
+}
+
+// Stat card tick: data blip
+function playTick(el, e) {
+  resume();
+  addRipple(el, e, 'ripple-ghost');
+
+  const now = AC.currentTime;
+  const osc = AC.createOscillator();
+  const gain = AC.createGain();
+  osc.connect(gain); gain.connect(AC.destination);
+  osc.frequency.setValueAtTime(800, now);
+  osc.frequency.exponentialRampToValueAtTime(640, now + 0.06);
+  gain.gain.setValueAtTime(0.09, now);
+  gain.gain.exponentialRampToValueAtTime(0.001, now + 0.09);
+  osc.type = 'sine';
+  osc.start(now); osc.stop(now + 0.1);
+}
+
+// SUCCESS: Duolingo-inspired Major Third (F# → A#) + shimmer
+function playSuccess(el, e) {
+  resume();
+  addRipple(el, e, 'ripple-effect');
+  showToast('Predictions complete — 3 customers flagged');
+
+  const now = AC.currentTime;
+
+  // Note 1: F# (370 Hz)
+  playNote(370, now, 0.18);
+  // Note 2: A# (466 Hz) — Major Third up, like Duolingo ding
+  playNote(466, now + 0.12, 0.2);
+  // Note 3: C# (554 Hz) — completes the major chord
+  playNote(554, now + 0.22, 0.16);
+  // Shimmer overtone
+  playNote(1108, now + 0.22, 0.06);
+}
+
+function playNote(freq, startTime, vol) {
+  const osc = AC.createOscillator();
+  const gain = AC.createGain();
+  osc.connect(gain); gain.connect(AC.destination);
+  osc.type = 'sine';
+  osc.frequency.setValueAtTime(freq, startTime);
+  gain.gain.setValueAtTime(0, startTime);
+  gain.gain.linearRampToValueAtTime(vol, startTime + 0.03);
+  gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.35);
+  osc.start(startTime);
+  osc.stop(startTime + 0.4);
+}
+
+// ── RIPPLE ─────────────────────────────────────────────────────────────────
+function addRipple(el, e, cls) {
+  if (!e) return;
+  const r = document.createElement('span');
+  r.classList.add('ripple-effect', cls);
+  const rect = el.getBoundingClientRect();
+  r.style.left = (e.clientX - rect.left - 10) + 'px';
+  r.style.top = (e.clientY - rect.top - 10) + 'px';
+  el.appendChild(r);
+  setTimeout(() => r.remove(), 600);
+}
+
+// ── PARTICLES ────────────────────────────────────────────────────────────────
+function spawnParticles(e) {
+  const colors = ['#f97316','#fb923c','#fbbf24','#f43f5e','#818cf8','#22d3ee'];
+  for (let i = 0; i < 16; i++) {
+    setTimeout(() => {
+      const p = document.createElement('div');
+      p.className = 'particle';
+      p.style.cssText = `
+        left:${e.clientX + (Math.random()-0.5)*60}px;
+        top:${e.clientY + (Math.random()-0.5)*30}px;
+        width:${4+Math.random()*5}px;
+        height:${4+Math.random()*5}px;
+        background:${colors[Math.floor(Math.random()*colors.length)]};
+        animation-duration:${0.6+Math.random()*0.4}s;
+        animation-delay:${Math.random()*0.1}s;
+      `;
+      document.body.appendChild(p);
+      setTimeout(() => p.remove(), 1200);
+    }, i * 20);
+  }
+}
+
+// ── TOAST ─────────────────────────────────────────────────────────────────
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  document.getElementById('toast-msg').textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3500);
+}
+</script>
+
+</body>
+</html>
