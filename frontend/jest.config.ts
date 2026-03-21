@@ -12,7 +12,14 @@ const config: Config = {
       setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
       testPathIgnorePatterns: ['<rootDir>/__tests__/api/'],
       transform: {
-        '^.+\\.(ts|tsx)$': ['ts-jest', { tsconfig: '<rootDir>/tsconfig.json' }],
+        '^.+\\.(ts|tsx)$': ['ts-jest', {
+          tsconfig: {
+            jsx: 'react-jsx',
+            module: 'commonjs',
+            moduleResolution: 'node',
+            esModuleInterop: true,
+          },
+        }],
       },
       moduleNameMapper: {
         '^@/(.*)$': '<rootDir>/$1',
