@@ -1,27 +1,96 @@
+/* frontend/styles/globals.css */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --p0: #FF6040;
+  --p1: #FF8060;
+  --p2: #FFAA88;
+  --p3: #FFD0BB;
+  --pd1: #E04020;
+  --pd2: #B82E10;
+  --bg: #070608;
+  --surface: #0e0b0a;
+  --text: #f5ede8;
+  --muted: #6b5a52;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+* { box-sizing: border-box; }
 
 body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', sans-serif;
+  margin: 0;
 }
 
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
-  }
+/* CRT scanline overlay */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.03) 2px,
+    rgba(0, 0, 0, 0.03) 4px
+  );
+}
+
+/* Skeleton shimmer */
+@keyframes shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--surface) 25%,
+    rgba(255, 96, 64, 0.06) 50%,
+    var(--surface) 75%
+  );
+  background-size: 800px 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 4px;
+}
+
+/* Breathing pulse on glow elements */
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 8px 2px rgba(255,96,64,0.3); }
+  50%       { box-shadow: 0 0 16px 6px rgba(255,96,64,0.6); }
+}
+
+.glow-pulse {
+  animation: pulse-glow 2.5s ease-in-out infinite;
+}
+
+/* Glitch keyframes for logo */
+@keyframes glitch {
+  0%   { clip-path: inset(0 0 100% 0); transform: translate(0); }
+  10%  { clip-path: inset(30% 0 50% 0); transform: translate(-3px, 1px); }
+  20%  { clip-path: inset(60% 0 10% 0); transform: translate(3px, -1px); }
+  30%  { clip-path: inset(0 0 100% 0); transform: translate(0); }
+  100% { clip-path: inset(0 0 100% 0); transform: translate(0); }
+}
+
+/* Toast spring */
+@keyframes toast-in {
+  0%   { transform: translateY(100%) scale(0.8); opacity: 0; }
+  100% { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+.toast-enter {
+  animation: toast-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+/* Ripple for buttons */
+@keyframes ripple {
+  to { transform: scale(4); opacity: 0; }
 }
