@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Foresight — Black & Orange</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #020202;
+    color: #e2e8f0;
+    font-family: -apple-system, 'Inter', BlinkMacSystemFont, sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  .layout { display: flex; min-height: 100vh; }
+
+  /* SIDEBAR */
+  .sidebar {
+    width: 220px;
+    background: #080808;
+    border-right: 1px solid rgba(249,115,22,0.15);
+    padding: 24px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+
+  .logo {
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    padding: 0 8px 24px;
+    color: #f97316;
+    text-shadow: 0 0 20px rgba(249,115,22,0.5), 0 0 60px rgba(249,115,22,0.2);
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    font-size: 13.5px;
+    font-weight: 500;
+    color: #4a4a4a;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    border: 1px solid transparent;
+    user-select: none;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .nav-item:hover { color: #a3a3a3; border-color: rgba(249,115,22,0.1); background: rgba(249,115,22,0.03); }
+
+  .nav-item.active {
+    color: #f97316;
+    background: rgba(249,115,22,0.08);
+    border-color: rgba(249,115,22,0.22);
+    box-shadow: 0 0 24px rgba(249,115,22,0.08), inset 0 0 16px rgba(249,115,22,0.03);
+  }
+
+  .nav-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: #333;
+    transition: all 0.15s;
+  }
+
+  .nav-item.active .nav-dot {
+    background: #f97316;
+    box-shadow: 0 0 8px #f97316, 0 0 16px rgba(249,115,22,0.5);
+  }
+
+  /* MAIN */
+  .main { flex: 1; padding: 32px; overflow-y: auto; }
+
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 32px;
+  }
+
+  .page-title {
+    font-size: 26px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    color: #f8fafc;
+  }
+
+  .page-sub { font-size: 13px; color: #3a3a3a; margin-top: 3px; }
+
+  /* BUTTONS */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 10px 18px;
+    border-radius: 10px;
+    font-size: 13.5px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: all 0.12s ease;
+    user-select: none;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn:active { transform: scale(0.95); }
+
+  .btn-primary {
+    background: #f97316;
+    color: #000;
+    box-shadow: 0 4px 24px rgba(249,115,22,0.4), 0 0 60px rgba(249,115,22,0.12);
+    font-weight: 700;
+  }
+
+  .btn-primary:hover {
+    background: #fb923c;
+    box-shadow: 0 6px 32px rgba(249,115,22,0.6), 0 0 80px rgba(249,115,22,0.2);
+    transform: translateY(-1px);
+  }
+
+  .btn-ghost {
+    background: transparent;
+    color: #6b6b6b;
+    border: 1px solid #1f1f1f;
+  }
+
+  .btn-ghost:hover {
+    color: #f97316;
+    border-color: rgba(249,115,22,0.3);
+    background: rgba(249,115,22,0.04);
+  }
+
+  /* TABS */
+  .tabs {
+    display: flex;
+    gap: 2px;
+    background: #080808;
+    border: 1px solid #181818;
+    border-radius: 12px;
+    padding: 4px;
+    margin-bottom: 28px;
+    width: fit-content;
+  }
+
+  .tab {
+    padding: 8px 18px;
+    border-radius: 9px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #3a3a3a;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    border: 1px solid transparent;
+    user-select: none;
+  }
+
+  .tab:hover { color: #888; }
+
+  .tab.active {
+    background: rgba(249,115,22,0.1);
+    color: #f97316;
+    border-color: rgba(249,115,22,0.25);
+    box-shadow: 0 0 20px rgba(249,115,22,0.1);
+  }
+
+  /* STAT CARDS */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+
+  .stat-card {
+    background: #080808;
+    border: 1px solid #161616;
+    border-radius: 14px;
+    padding: 20px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .stat-card::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(249,115,22,0.3), transparent);
+  }
+
+  .stat-card:hover {
+    border-color: rgba(249,115,22,0.2);
+    box-shadow: 0 0 40px rgba(249,115,22,0.06);
+    transform: translateY(-2px);
+  }
+
+  .stat-label {
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: #333;
+    margin-bottom: 10px;
+  }
+
+  .stat-value {
+    font-size: 30px;
+    font-weight: 800;
+    letter-spacing: -1px;
+    color: #f8fafc;
+    line-height: 1;
+    margin-bottom: 12px;
+  }
+
+  .stat-bar {
+    height: 2px;
+    background: #111;
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 10px;
+  }
+
+  .stat-bar-fill {
+    height: 100%;
+    border-radius: 2px;
+  }
+
+  .stat-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 6px;
+  }
+
+  .badge-orange { background: rgba(249,115,22,0.1); color: #f97316; border: 1px solid rgba(249,115,22,0.2); }
+  .badge-red { background: rgba(239,68,68,0.1); color: #ef4444; border: 1px solid rgba(239,68,68,0.2); }
+  .badge-green { background: rgba(34,197,94,0.08); color: #22c55e; border: 1px solid rgba(34,197,94,0.15); }
+  .badge-dim { background: #111; color: #555; border: 1px solid #1f1f1f; }
+
+  /* TABLE */
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+
+  .section-title { font-size: 14px; font-weight: 700; color: #888; letter-spacing: 0.5px; text-transform: uppercase; }
+
+  .table-wrap {
+    background: #060606;
+    border: 1px solid #141414;
+    border-radius: 14px;
+    overflow: hidden;
+  }
+
+  .table-head {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+    padding: 12px 20px;
+    border-bottom: 1px solid #101010;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: #2a2a2a;
+  }
+
+  .table-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+    padding: 14px 20px;
+    border-bottom: 1px solid #0c0c0c;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.12s ease;
+    position: relative;
+  }
+
+  .table-row::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 0;
+    background: linear-gradient(90deg, rgba(249,115,22,0.2), transparent);
+    transition: width 0.2s ease;
+    border-radius: 0 4px 4px 0;
+  }
+
+  .table-row:hover { background: rgba(249,115,22,0.02); }
+  .table-row:hover::before { width: 3px; }
+  .table-row:last-child { border-bottom: none; }
+
+  .customer-name { font-weight: 600; color: #e2e8f0; display: flex; align-items: center; gap: 10px; }
+  .customer-email { font-size: 11px; color: #2a2a2a; margin-top: 2px; }
+
+  .avatar {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 800;
+    flex-shrink: 0;
+    border: 1px solid rgba(249,115,22,0.15);
+  }
+
+  .col-value { color: #3a3a3a; font-size: 13px; }
+  .col-money { color: #888; font-weight: 600; font-size: 13px; }
+
+  .risk-high { background: rgba(239,68,68,0.08); color: #ef4444; border: 1px solid rgba(239,68,68,0.15); border-radius: 6px; padding: 3px 8px; font-size: 10px; font-weight: 700; letter-spacing: 0.5px; }
+  .risk-med { background: rgba(249,115,22,0.08); color: #f97316; border: 1px solid rgba(249,115,22,0.2); border-radius: 6px; padding: 3px 8px; font-size: 10px; font-weight: 700; letter-spacing: 0.5px; }
+  .risk-low { background: rgba(34,197,94,0.06); color: #22c55e; border: 1px solid rgba(34,197,94,0.12); border-radius: 6px; padding: 3px 8px; font-size: 10px; font-weight: 700; letter-spacing: 0.5px; }
+
+  /* RIPPLE */
+  @keyframes ripple { to { transform: scale(5); opacity: 0; } }
+  .ripple {
+    position: absolute;
+    border-radius: 50%;
+    width: 16px; height: 16px;
+    background: rgba(249,115,22,0.5);
+    transform: scale(0);
+    animation: ripple 0.5s linear;
+    pointer-events: none;
+  }
+
+  /* PARTICLES */
+  .particle {
+    position: fixed;
+    pointer-events: none;
+    border-radius: 50%;
+    animation: floatUp 0.9s ease-out forwards;
+    z-index: 9999;
+  }
+
+  @keyframes floatUp {
+    0% { transform: translateY(0) scale(1) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(-80px) scale(0) rotate(180deg); opacity: 0; }
+  }
+
+  /* TOAST */
+  .toast {
+    position: fixed;
+    bottom: 28px;
+    right: 28px;
+    background: #080808;
+    border: 1px solid rgba(249,115,22,0.3);
+    border-radius: 12px;
+    padding: 14px 20px;
+    font-size: 13.5px;
+    font-weight: 500;
+    color: #e2e8f0;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.8), 0 0 40px rgba(249,115,22,0.08);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transform: translateY(80px);
+    opacity: 0;
+    transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    z-index: 1000;
+  }
+
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast-dot { width: 8px; height: 8px; border-radius: 50%; background: #f97316; box-shadow: 0 0 10px #f97316; flex-shrink: 0; }
+
+  /* GLOW PULSE */
+  @keyframes orangeGlow {
+    0%, 100% { box-shadow: 0 4px 24px rgba(249,115,22,0.4), 0 0 60px rgba(249,115,22,0.12); }
+    50% { box-shadow: 0 4px 40px rgba(249,115,22,0.7), 0 0 100px rgba(249,115,22,0.25); }
+  }
+  .btn-primary:hover { animation: orangeGlow 2s ease infinite; }
+
+  /* AMBIENT GLOW bg */
+  body::before {
+    content: '';
+    position: fixed;
+    top: -200px; left: -200px;
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(249,115,22,0.04) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  body::after {
+    content: '';
+    position: fixed;
+    bottom: -200px; right: -200px;
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, rgba(249,115,22,0.03) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .layout { position: relative; z-index: 1; }
+</style>
+</head>
+<body>
+
+<div class="layout">
+  <div class="sidebar">
+    <div class="logo">Foresight</div>
+    <div class="nav-item active" onclick="playNav(this)"><div class="nav-dot"></div>Dashboard</div>
+    <div class="nav-item" onclick="playNav(this)"><div class="nav-dot"></div>Customers</div>
+    <div class="nav-item" onclick="playNav(this)"><div class="nav-dot"></div>Predictions</div>
+    <div class="nav-item" onclick="playNav(this)"><div class="nav-dot"></div>Integrations</div>
+    <div class="nav-item" onclick="playNav(this)"><div class="nav-dot"></div>Reports</div>
+    <div style="margin-top:auto;padding-top:20px;border-top:1px solid #111;">
+      <div class="nav-item" onclick="playNav(this)"><div class="nav-dot"></div>Settings</div>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="topbar">
+      <div>
+        <div class="page-title">Dashboard</div>
+        <div class="page-sub">Thursday, March 19 · Bella's Salon & Co.</div>
+      </div>
+      <div style="display:flex;gap:10px;">
+        <button class="btn btn-ghost" onclick="playGhost(this,event)">Sync Square</button>
+        <button class="btn btn-primary" onclick="playSuccess(this,event)">Run Predictions</button>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <div class="tab active" onclick="playTab(this)">Overview</div>
+      <div class="tab" onclick="playTab(this)">At-Risk</div>
+      <div class="tab" onclick="playTab(this)">Loyal</div>
+      <div class="tab" onclick="playTab(this)">New</div>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card" onclick="playTick(this,event)">
+        <div class="stat-label">Total Customers</div>
+        <div class="stat-value">248</div>
+        <div class="stat-bar"><div class="stat-bar-fill" style="width:72%;background:linear-gradient(90deg,#f97316,#ea580c);"></div></div>
+        <span class="stat-badge badge-orange">+12 this month</span>
+      </div>
+      <div class="stat-card" onclick="playTick(this,event)">
+        <div class="stat-label">Total Revenue</div>
+        <div class="stat-value">$38.4k</div>
+        <div class="stat-bar"><div class="stat-bar-fill" style="width:85%;background:linear-gradient(90deg,#f97316,#fbbf24);"></div></div>
+        <span class="stat-badge badge-orange">+$4.2k vs last mo</span>
+      </div>
+      <div class="stat-card" onclick="playTick(this,event)">
+        <div class="stat-label">High Churn Risk</div>
+        <div class="stat-value">31</div>
+        <div class="stat-bar"><div class="stat-bar-fill" style="width:31%;background:linear-gradient(90deg,#ef4444,#dc2626);"></div></div>
+        <span class="stat-badge badge-red">Needs attention</span>
+      </div>
+      <div class="stat-card" onclick="playTick(this,event)">
+        <div class="stat-label">Avg Visits / Customer</div>
+        <div class="stat-value">6.2</div>
+        <div class="stat-bar"><div class="stat-bar-fill" style="width:55%;background:linear-gradient(90deg,#f97316,#fb923c);"></div></div>
+        <span class="stat-badge badge-green">Above avg</span>
+      </div>
+    </div>
+
+    <div class="section-header">
+      <div class="section-title">Customer Intelligence</div>
+      <button class="btn btn-ghost" style="font-size:12px;padding:7px 14px;" onclick="playGhost(this,event)">Export CSV</button>
+    </div>
+
+    <div class="table-wrap">
+      <div class="table-head">
+        <span>Customer</span><span>Visits</span><span>Spent</span><span>Last Visit</span><span>Risk</span>
+      </div>
+
+      <div class="table-row" onclick="playRow(this,event)">
+        <div class="customer-name">
+          <div class="avatar" style="background:#1a0800;color:#f97316;">SJ</div>
+          <div><div>Sarah Johnson</div><div class="customer-email">sarah@email.com</div></div>
+        </div>
+        <div class="col-value">14</div><div class="col-money">$1,240</div><div class="col-value">32d ago</div>
+        <div><span class="risk-high">HIGH</span></div>
+      </div>
+
+      <div class="table-row" onclick="playRow(this,event)">
+        <div class="customer-name">
+          <div class="avatar" style="background:#1a0a00;color:#fb923c;">MW</div>
+          <div><div>Marcus Williams</div><div class="customer-email">marcus@email.com</div></div>
+        </div>
+        <div class="col-value">9</div><div class="col-money">$890</div><div class="col-value">18d ago</div>
+        <div><span class="risk-med">MED</span></div>
+      </div>
+
+      <div class="table-row" onclick="playRow(this,event)">
+        <div class="customer-name">
+          <div class="avatar" style="background:#001a08;color:#22c55e;">PL</div>
+          <div><div>Priya Lalwani</div><div class="customer-email">priya@email.com</div></div>
+        </div>
+        <div class="col-value">27</div><div class="col-money">$3,410</div><div class="col-value">3d ago</div>
+        <div><span class="risk-low">LOW</span></div>
+      </div>
+
+      <div class="table-row" onclick="playRow(this,event)">
+        <div class="customer-name">
+          <div class="avatar" style="background:#0d1a00;color:#84cc16;">DK</div>
+          <div><div>David Kim</div><div class="customer-email">david@email.com</div></div>
+        </div>
+        <div class="col-value">19</div><div class="col-money">$2,180</div><div class="col-value">7d ago</div>
+        <div><span class="risk-low">LOW</span></div>
+      </div>
+
+      <div class="table-row" onclick="playRow(this,event)">
+        <div class="customer-name">
+          <div class="avatar" style="background:#1a0000;color:#ef4444;">AT</div>
+          <div><div>Aisha Thompson</div><div class="customer-email">aisha@email.com</div></div>
+        </div>
+        <div class="col-value">5</div><div class="col-money">$420</div><div class="col-value">41d ago</div>
+        <div><span class="risk-high">HIGH</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast">
+  <div class="toast-dot"></div>
+  <span id="toast-msg">Predictions complete — 3 customers flagged</span>
+</div>
+
+<script>
+const AC = new (window.AudioContext || window.webkitAudioContext)();
+function resume() { if (AC.state === 'suspended') AC.resume(); }
+
+function note(freq, start, vol, dur, type='sine') {
+  const o = AC.createOscillator(), g = AC.createGain();
+  o.connect(g); g.connect(AC.destination);
+  o.type = type;
+  o.frequency.setValueAtTime(freq, start);
+  g.gain.setValueAtTime(0, start);
+  g.gain.linearRampToValueAtTime(vol, start + 0.02);
+  g.gain.exponentialRampToValueAtTime(0.001, start + dur);
+  o.start(start); o.stop(start + dur + 0.02);
+}
+
+function playNav(el) {
+  resume();
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  el.classList.add('active');
+  const t = AC.currentTime;
+  note(480, t, 0.09, 0.1);
+}
+
+function playTab(el) {
+  resume();
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  const t = AC.currentTime;
+  note(660, t, 0.08, 0.08, 'triangle');
+}
+
+function playGhost(el, e) {
+  resume();
+  ripple(el, e);
+  const t = AC.currentTime;
+  note(700, t, 0.08, 0.07);
+}
+
+function playTick(el, e) {
+  resume();
+  ripple(el, e);
+  const t = AC.currentTime;
+  note(820, t, 0.08, 0.08);
+  note(640, t + 0.05, 0.05, 0.06);
+}
+
+function playRow(el, e) {
+  resume();
+  const t = AC.currentTime;
+  note(600, t, 0.06, 0.06);
+}
+
+// BIG SUCCESS: Major Third chord F# → A# → C# (Duolingo-style) with orange punch
+function playSuccess(el, e) {
+  resume();
+  ripple(el, e);
+  spawnParticles(e);
+  showToast('Predictions complete — 3 customers flagged');
+
+  const t = AC.currentTime;
+  // Punch
+  note(370, t, 0.18, 0.3);
+  note(466, t + 0.13, 0.2, 0.3);
+  note(554, t + 0.24, 0.16, 0.35);
+  note(1108, t + 0.24, 0.06, 0.25); // shimmer overtone
+}
+
+function ripple(el, e) {
+  if (!e) return;
+  const r = document.createElement('span');
+  r.className = 'ripple';
+  const rect = el.getBoundingClientRect();
+  r.style.left = (e.clientX - rect.left - 8) + 'px';
+  r.style.top = (e.clientY - rect.top - 8) + 'px';
+  el.appendChild(r);
+  setTimeout(() => r.remove(), 600);
+}
+
+function spawnParticles(e) {
+  const colors = ['#f97316','#fb923c','#fbbf24','#ef4444','#fdba74','#fff'];
+  for (let i = 0; i < 20; i++) {
+    setTimeout(() => {
+      const p = document.createElement('div');
+      p.className = 'particle';
+      const size = 4 + Math.random() * 6;
+      p.style.cssText = `
+        left:${e.clientX + (Math.random()-0.5)*80}px;
+        top:${e.clientY + (Math.random()-0.5)*40}px;
+        width:${size}px; height:${size}px;
+        background:${colors[Math.floor(Math.random()*colors.length)]};
+        box-shadow:0 0 6px currentColor;
+        animation-duration:${0.7+Math.random()*0.5}s;
+        animation-delay:${Math.random()*0.08}s;
+      `;
+      document.body.appendChild(p);
+      setTimeout(() => p.remove(), 1400);
+    }, i * 15);
+  }
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  document.getElementById('toast-msg').textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3500);
+}
+</script>
+</body>
+</html>

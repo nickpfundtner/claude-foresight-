@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Foresight — Full Mockup</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  background: #020202;
+  color: #e2e8f0;
+  font-family: -apple-system,'Inter',BlinkMacSystemFont,sans-serif;
+  min-height:100vh;
+  overflow-x:hidden;
+}
+
+/* ── MESH BACKGROUND ───────────────────────────────────────────────── */
+.mesh {
+  position:fixed; inset:0; pointer-events:none; z-index:0;
+  background:
+    radial-gradient(ellipse 60% 50% at 20% 20%, rgba(249,115,22,0.045) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 60% at 80% 80%, rgba(249,115,22,0.03) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 40% at 60% 30%, rgba(239,68,68,0.015) 0%, transparent 55%);
+  animation: meshDrift 18s ease-in-out infinite alternate;
+}
+@keyframes meshDrift {
+  0%   { background-position: 0% 0%, 100% 100%, 60% 30%; }
+  33%  { transform: translate(12px, -8px); }
+  66%  { transform: translate(-8px, 14px); }
+  100% { transform: translate(6px, -4px); }
+}
+
+/* ── LAYOUT ─────────────────────────────────────────────────────────── */
+.layout { display:flex; min-height:100vh; position:relative; z-index:1; }
+
+/* ── SIDEBAR ────────────────────────────────────────────────────────── */
+.sidebar {
+  width:210px; background:#050505;
+  border-right:1px solid rgba(249,115,22,0.1);
+  padding:24px 14px; display:flex; flex-direction:column;
+  gap:3px; flex-shrink:0;
+}
+.logo {
+  font-size:21px; font-weight:800; letter-spacing:-0.5px;
+  padding:0 8px 22px; color:#f97316;
+  text-shadow:0 0 12px rgba(249,115,22,0.5),0 0 32px rgba(249,115,22,0.15);
+}
+.nav-item {
+  display:flex; align-items:center; gap:10px;
+  padding:9px 12px; border-radius:10px;
+  font-size:13px; font-weight:500; color:#3a3a3a;
+  cursor:pointer; transition:all .15s;
+  border:1px solid transparent; user-select:none;
+}
+.nav-item:hover { color:#888; border-color:rgba(249,115,22,0.08); background:rgba(249,115,22,0.025); }
+.nav-item.active {
+  color:#f97316; background:rgba(249,115,22,0.07);
+  border-color:rgba(249,115,22,0.2);
+  text-shadow:0 0 10px rgba(249,115,22,0.25);
+}
+.nav-dot { width:6px;height:6px;border-radius:50%;background:#1a1a1a;flex-shrink:0;transition:all .15s; }
+.nav-item.active .nav-dot { background:#f97316;box-shadow:0 0 6px rgba(249,115,22,0.9),0 0 14px rgba(249,115,22,0.4); }
+.nav-kbd {
+  margin-left:auto; font-size:10px; color:#222;
+  background:#0e0e0e; border:1px solid #1a1a1a;
+  border-radius:4px; padding:2px 5px;
+}
+
+/* ── MAIN ────────────────────────────────────────────────────────────── */
+.main { flex:1; padding:28px 28px 28px 28px; overflow-y:auto; display:flex; flex-direction:column; }
+.content-row { display:flex; gap:20px; flex:1; }
+.content-left { flex:1; min-width:0; }
+
+/* ── TOPBAR ──────────────────────────────────────────────────────────── */
+.topbar { display:flex;align-items:center;justify-content:space-between;margin-bottom:28px; }
+.page-title { font-size:24px;font-weight:800;letter-spacing:-.5px;color:#f0f0f0; }
+.page-sub { font-size:12px;color:#2e2e2e;margin-top:3px; }
+.topbar-right { display:flex;gap:8px;align-items:center; }
+
+/* ── BUTTONS ─────────────────────────────────────────────────────────── */
+.btn {
+  display:inline-flex;align-items:center;gap:6px;
+  padding:9px 16px;border-radius:10px;
+  font-size:13px;font-weight:700;
+  cursor:pointer;border:none;transition:all .12s;
+  user-select:none;position:relative;overflow:hidden;
+}
+.btn:active { transform:scale(.95); }
+.btn-primary {
+  background:#f97316;color:#000;
+  box-shadow:0 0 0 1px rgba(249,115,22,.35),0 4px 16px rgba(249,115,22,.4),0 8px 40px rgba(249,115,22,.15);
+}
+.btn-primary:hover {
+  background:#fb923c;transform:translateY(-1px);
+  box-shadow:0 0 0 1px rgba(251,146,60,.5),0 4px 22px rgba(249,115,22,.6),0 12px 60px rgba(249,115,22,.25);
+  animation:orangeGlow 2s ease infinite;
+}
+@keyframes orangeGlow {
+  0%,100% { box-shadow:0 0 0 1px rgba(249,115,22,.4),0 4px 16px rgba(249,115,22,.45),0 10px 50px rgba(249,115,22,.2); }
+  50%      { box-shadow:0 0 0 1px rgba(251,146,60,.5),0 4px 24px rgba(249,115,22,.65),0 14px 70px rgba(249,115,22,.3); }
+}
+.btn-ghost { background:transparent;color:#444;border:1px solid #181818; }
+.btn-ghost:hover { color:#f97316;border-color:rgba(249,115,22,.22);background:rgba(249,115,22,.03); }
+.btn-kbd {
+  background:#0e0e0e;color:#333;border:1px solid #1a1a1a;
+  font-size:12px;padding:9px 14px;border-radius:10px;cursor:pointer;
+  transition:all .12s;user-select:none;
+}
+.btn-kbd:hover { color:#f97316;border-color:rgba(249,115,22,.22); }
+
+/* ── TABS ────────────────────────────────────────────────────────────── */
+.row-bar { display:flex;align-items:center;justify-content:space-between;margin-bottom:18px; }
+.tabs { display:flex;gap:2px;background:#070707;border:1px solid #161616;border-radius:11px;padding:3px; }
+.tab { padding:7px 14px;border-radius:8px;font-size:12.5px;font-weight:500;color:#2e2e2e;cursor:pointer;transition:all .15s;border:1px solid transparent;user-select:none; }
+.tab:hover { color:#666; }
+.tab.active { background:rgba(249,115,22,.09);color:#f97316;border-color:rgba(249,115,22,.2);text-shadow:0 0 8px rgba(249,115,22,.22);box-shadow:0 0 14px rgba(249,115,22,.06); }
+
+.chart-toggle { display:flex;gap:2px;background:#070707;border:1px solid #161616;border-radius:9px;padding:3px; }
+.ctab { padding:5px 11px;border-radius:7px;font-size:11px;font-weight:600;letter-spacing:.4px;color:#2a2a2a;cursor:pointer;transition:all .12s;border:1px solid transparent;user-select:none; }
+.ctab:hover { color:#555; }
+.ctab.active { background:rgba(249,115,22,.09);color:#f97316;border-color:rgba(249,115,22,.18);text-shadow:0 0 6px rgba(249,115,22,.2); }
+
+/* ── STAT CARDS ──────────────────────────────────────────────────────── */
+.stats-grid { display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px; }
+.stat-card {
+  background:#070707;border:1px solid #141414;border-radius:14px;
+  padding:17px 17px 13px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden;
+}
+.stat-card::after { content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(249,115,22,.22),transparent); }
+.stat-card:hover { border-color:rgba(249,115,22,.16);box-shadow:0 0 36px rgba(249,115,22,.05),0 4px 20px rgba(0,0,0,.5);transform:translateY(-2px); }
+.stat-label { font-size:9.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#272727;margin-bottom:7px; }
+
+/* Counter */
+.stat-value { font-size:28px;font-weight:800;letter-spacing:-1px;line-height:1;margin-bottom:12px;color:#f0f0f0; }
+.stat-value.orange { color:#f97316;text-shadow:0 0 14px rgba(249,115,22,.32),0 0 36px rgba(249,115,22,.1); }
+.stat-value.red    { color:#ef4444;text-shadow:0 0 14px rgba(239,68,68,.28),0 0 32px rgba(239,68,68,.08); }
+.stat-value.green  { color:#22c55e;text-shadow:0 0 14px rgba(34,197,94,.22),0 0 30px rgba(34,197,94,.07); }
+
+/* Donut ring for churn */
+.donut-wrap { display:flex;align-items:center;gap:12px;margin-bottom:12px; }
+.donut-ring { position:relative;width:54px;height:54px;flex-shrink:0; }
+.donut-ring svg { transform:rotate(-90deg); }
+.donut-bg   { fill:none;stroke:#111;stroke-width:5; }
+.donut-fill { fill:none;stroke:#ef4444;stroke-width:5;stroke-linecap:round;stroke-dasharray:132;stroke-dashoffset:132;transition:stroke-dashoffset 1.2s cubic-bezier(.34,1.2,.64,1);filter:drop-shadow(0 0 4px rgba(239,68,68,.5)); }
+.donut-label { position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#ef4444;text-shadow:0 0 8px rgba(239,68,68,.4); }
+
+/* Stat chart */
+.stat-chart { height:40px;margin-bottom:6px; }
+.chart-vis {}
+
+/* Sparkline */
+.sparkline { display:block;width:100%;height:40px; }
+.spark-path { fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round; }
+.spark-fill { opacity:1; }
+.spark-dot  { filter:drop-shadow(0 0 3px currentColor); }
+
+/* Self-drawing animation */
+.spark-anim { stroke-dasharray:200;stroke-dashoffset:200;animation:drawLine 1s ease forwards; }
+@keyframes drawLine { to { stroke-dashoffset:0; } }
+
+/* Bar chart */
+.bar-chart { display:flex;align-items:flex-end;gap:3px;height:40px;width:100%; }
+.bar { flex:1;border-radius:3px 3px 0 0;min-height:4px;transition:height .4s cubic-bezier(.34,1.2,.64,1); }
+.bar.orange { background:linear-gradient(180deg,#f97316,rgba(249,115,22,.25)); }
+.bar.red    { background:linear-gradient(180deg,#ef4444,rgba(239,68,68,.2)); }
+.bar.green  { background:linear-gradient(180deg,#22c55e,rgba(34,197,94,.15)); }
+.bar:hover  { filter:brightness(1.3); }
+
+/* Numbers mini */
+.num-vis { font-size:10px;color:#2a2a2a;display:flex;justify-content:space-between;padding-top:10px; }
+
+.stat-badge { display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:600;padding:3px 8px;border-radius:6px;margin-top:6px; }
+.badge-orange { background:rgba(249,115,22,.07);color:#f97316;border:1px solid rgba(249,115,22,.14); }
+.badge-red    { background:rgba(239,68,68,.07);color:#ef4444;border:1px solid rgba(239,68,68,.14); }
+.badge-green  { background:rgba(34,197,94,.05);color:#22c55e;border:1px solid rgba(34,197,94,.12); }
+
+/* ── TABLE ───────────────────────────────────────────────────────────── */
+.section-header { display:flex;align-items:center;justify-content:space-between;margin-bottom:12px; }
+.section-title { font-size:9.5px;font-weight:700;color:#222;letter-spacing:1px;text-transform:uppercase; }
+.table-wrap { background:#050505;border:1px solid #111;border-radius:14px;overflow:hidden; }
+.table-head { display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;padding:11px 18px;border-bottom:1px solid #0d0d0d;font-size:9.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#222; }
+.table-row { display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;padding:12px 18px;border-bottom:1px solid #090909;align-items:center;cursor:pointer;transition:all .12s;position:relative; }
+.table-row::before { content:'';position:absolute;left:0;top:0;bottom:0;width:0;background:linear-gradient(90deg,rgba(249,115,22,.16),transparent);transition:width .18s ease;border-radius:0 3px 3px 0; }
+.table-row:hover { background:rgba(249,115,22,.012); }
+.table-row:hover::before { width:3px; }
+.table-row:last-child { border-bottom:none; }
+.customer-name { font-weight:600;color:#bbb;display:flex;align-items:center;gap:9px; }
+.customer-email { font-size:10.5px;color:#222;margin-top:1px; }
+.avatar { width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0;border:1px solid rgba(249,115,22,.1); }
+.col-value { color:#2e2e2e;font-size:12.5px; }
+.col-money { color:#666;font-weight:600;font-size:12.5px; }
+.risk-high { background:rgba(239,68,68,.07);color:#ef4444;border:1px solid rgba(239,68,68,.14);border-radius:6px;padding:2px 7px;font-size:9.5px;font-weight:700; }
+.risk-med  { background:rgba(249,115,22,.07);color:#f97316;border:1px solid rgba(249,115,22,.16);border-radius:6px;padding:2px 7px;font-size:9.5px;font-weight:700; }
+.risk-low  { background:rgba(34,197,94,.05);color:#22c55e;border:1px solid rgba(34,197,94,.12);border-radius:6px;padding:2px 7px;font-size:9.5px;font-weight:700; }
+
+/* ── LIVE FEED ───────────────────────────────────────────────────────── */
+.live-feed {
+  width:220px;flex-shrink:0;
+  background:#050505;border:1px solid rgba(249,115,22,.09);
+  border-radius:14px;padding:16px;height:fit-content;
+  position:sticky;top:0;
+}
+.feed-title { font-size:9.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#222;margin-bottom:14px;display:flex;align-items:center;gap:6px; }
+.feed-dot { width:6px;height:6px;border-radius:50%;background:#f97316;box-shadow:0 0 6px rgba(249,115,22,.8);animation:pulse 2s ease infinite; }
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.3)} }
+.feed-item { padding:9px 0;border-bottom:1px solid #0d0d0d;font-size:11.5px; }
+.feed-item:last-child { border-bottom:none; }
+.feed-name { color:#aaa;font-weight:600;margin-bottom:2px; }
+.feed-action { color:#333;font-size:10.5px; }
+.feed-time { color:#222;font-size:9.5px;margin-top:2px; }
+.feed-badge { display:inline-block;padding:1px 5px;border-radius:4px;font-size:9px;font-weight:700;margin-left:4px;vertical-align:middle; }
+
+/* ── SLIDE PANEL ─────────────────────────────────────────────────────── */
+.panel-overlay { position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:100;opacity:0;pointer-events:none;transition:opacity .25s; }
+.panel-overlay.open { opacity:1;pointer-events:all; }
+.slide-panel {
+  position:fixed;right:0;top:0;bottom:0;width:380px;
+  background:#080808;border-left:1px solid rgba(249,115,22,.15);
+  z-index:101;transform:translateX(100%);transition:transform .35s cubic-bezier(.34,1.15,.64,1);
+  padding:28px 24px;overflow-y:auto;
+}
+.slide-panel.open { transform:translateX(0); }
+.panel-close { position:absolute;top:18px;right:18px;width:30px;height:30px;border-radius:8px;background:#111;border:1px solid #1e1e1e;color:#444;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;transition:all .12s; }
+.panel-close:hover { color:#f97316;border-color:rgba(249,115,22,.25); }
+.panel-avatar { width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;border:2px solid rgba(249,115,22,.2);margin-bottom:12px;box-shadow:0 0 20px rgba(249,115,22,.1); }
+.panel-name { font-size:18px;font-weight:700;color:#f0f0f0;margin-bottom:2px; }
+.panel-email { font-size:12px;color:#333;margin-bottom:20px; }
+.panel-section { margin-bottom:20px; }
+.panel-section-title { font-size:9.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#2a2a2a;margin-bottom:10px; }
+.panel-stat { display:flex;justify-content:space-between;padding:9px 12px;background:#0d0d0d;border:1px solid #141414;border-radius:9px;margin-bottom:6px; }
+.panel-stat-label { font-size:12px;color:#444; }
+.panel-stat-value { font-size:12px;font-weight:700;color:#ccc; }
+.insight-box { background:#0a0a0a;border:1px solid rgba(249,115,22,.12);border-radius:10px;padding:13px;font-size:12px;color:#555;line-height:1.6;position:relative;overflow:hidden; }
+.insight-box::before { content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(249,115,22,.3),transparent); }
+.risk-ring-big { display:flex;flex-direction:column;align-items:center;padding:16px;background:#0a0a0a;border:1px solid #141414;border-radius:12px;margin-bottom:6px; }
+.risk-ring-big svg { transform:rotate(-90deg);margin-bottom:8px; }
+
+/* ── CMD PALETTE ─────────────────────────────────────────────────────── */
+.cmd-overlay { position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;opacity:0;pointer-events:none;transition:opacity .2s;backdrop-filter:blur(4px); }
+.cmd-overlay.open { opacity:1;pointer-events:all; }
+.cmd-modal {
+  position:fixed;top:20%;left:50%;transform:translateX(-50%) translateY(-10px);
+  width:520px;background:#080808;border:1px solid rgba(249,115,22,.2);
+  border-radius:16px;z-index:201;
+  box-shadow:0 0 0 1px rgba(249,115,22,.08),0 24px 80px rgba(0,0,0,.9),0 0 80px rgba(249,115,22,.06);
+  opacity:0;pointer-events:none;transition:all .22s cubic-bezier(.34,1.2,.64,1);
+}
+.cmd-overlay.open .cmd-modal { opacity:1;pointer-events:all;transform:translateX(-50%) translateY(0); }
+.cmd-input-wrap { display:flex;align-items:center;gap:12px;padding:16px 18px;border-bottom:1px solid #111; }
+.cmd-icon { font-size:16px;color:#333; }
+.cmd-input { flex:1;background:transparent;border:none;outline:none;font-size:15px;color:#e2e8f0;caret-color:#f97316; }
+.cmd-input::placeholder { color:#282828; }
+.cmd-results { padding:8px; }
+.cmd-item { display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:9px;cursor:pointer;transition:all .1s;color:#555;font-size:13px; }
+.cmd-item:hover,.cmd-item.selected { background:rgba(249,115,22,.07);color:#f97316; }
+.cmd-item-icon { width:28px;height:28px;border-radius:7px;background:#111;border:1px solid #1a1a1a;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0; }
+.cmd-hint { padding:10px 18px;border-top:1px solid #0d0d0d;font-size:10.5px;color:#1e1e1e;display:flex;gap:16px; }
+.cmd-hint kbd { background:#111;border:1px solid #1a1a1a;border-radius:4px;padding:1px 5px;font-size:10px;color:#333; }
+
+/* ── ONBOARDING OVERLAY ──────────────────────────────────────────────── */
+.onboarding {
+  position:fixed;inset:0;background:#020202;z-index:300;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;transition:opacity .3s;
+}
+.onboarding.open { opacity:1;pointer-events:all; }
+.ob-title { font-size:28px;font-weight:800;color:#f0f0f0;text-align:center;margin-bottom:6px;letter-spacing:-.5px; }
+.ob-sub { font-size:14px;color:#333;text-align:center;margin-bottom:40px; }
+.ob-cards { display:flex;gap:16px;margin-bottom:40px; }
+.ob-card {
+  width:160px;background:#070707;border:1px solid #181818;border-radius:16px;
+  padding:24px 16px;text-align:center;cursor:pointer;transition:all .2s;position:relative;overflow:hidden;
+}
+.ob-card::after { content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(249,115,22,.2),transparent); }
+.ob-card:hover { border-color:rgba(249,115,22,.25);box-shadow:0 0 40px rgba(249,115,22,.07);transform:translateY(-3px); }
+.ob-card.pulse-card { animation:cardPulse 3s ease infinite; }
+@keyframes cardPulse {
+  0%,100% { box-shadow:0 0 0 rgba(249,115,22,0); }
+  50% { box-shadow:0 0 30px rgba(249,115,22,.12),0 0 1px rgba(249,115,22,.2); }
+}
+.ob-icon { font-size:32px;margin-bottom:12px; }
+.ob-name { font-size:13px;font-weight:700;color:#aaa;margin-bottom:4px; }
+.ob-status { font-size:11px;color:#2a2a2a; }
+.ob-connect { font-size:10.5px;font-weight:700;color:#f97316;text-shadow:0 0 8px rgba(249,115,22,.3);margin-top:8px; }
+.ob-close { font-size:12px;color:#333;cursor:pointer;transition:color .12s; }
+.ob-close:hover { color:#f97316; }
+
+/* ── TOAST ───────────────────────────────────────────────────────────── */
+.toast { position:fixed;bottom:24px;right:24px;background:#080808;border:1px solid rgba(249,115,22,.25);border-radius:12px;padding:13px 18px;font-size:13px;font-weight:500;color:#ccc;box-shadow:0 8px 40px rgba(0,0,0,.8),0 0 28px rgba(249,115,22,.05);display:flex;align-items:center;gap:9px;transform:translateY(70px);opacity:0;transition:all .35s cubic-bezier(.34,1.56,.64,1);z-index:400; }
+.toast.show { transform:translateY(0);opacity:1; }
+.toast-dot { width:7px;height:7px;border-radius:50%;background:#f97316;box-shadow:0 0 8px rgba(249,115,22,.8),0 0 16px rgba(249,115,22,.3);flex-shrink:0; }
+
+/* ── PARTICLES / RIPPLE ──────────────────────────────────────────────── */
+@keyframes rippleAnim { to { transform:scale(5);opacity:0; } }
+.ripple { position:absolute;border-radius:50%;width:14px;height:14px;background:rgba(249,115,22,.45);transform:scale(0);animation:rippleAnim .5s linear;pointer-events:none; }
+.particle { position:fixed;pointer-events:none;border-radius:50%;animation:floatUp .9s ease-out forwards;z-index:9999; }
+@keyframes floatUp { 0%{transform:translateY(0) scale(1);opacity:1}100%{transform:translateY(-90px) scale(0);opacity:0} }
+</style>
+</head>
+<body>
+<div class="mesh"></div>
+
+<!-- ── LAYOUT ─────────────────────────────────────────────────── -->
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="logo">Foresight</div>
+    <div class="nav-item active" onclick="playNav(this)"><div class="nav-dot"></div>Dashboard</div>
+    <div class="nav-item" onclick="playNav(this)"><div class="nav-dot"></div>Customers</div>
+    <div class="nav-item" onclick="playNav(this)"><div class="nav-dot"></div>Predictions</div>
+    <div class="nav-item" onclick="playNav(this)"><div class="nav-dot"></div>Integrations</div>
+    <div class="nav-item" onclick="playNav(this)"><div class="nav-dot"></div>Reports</div>
+    <div style="margin-top:auto;padding-top:16px;border-top:1px solid #0f0f0f;display:flex;flex-direction:column;gap:3px;">
+      <div class="nav-item" onclick="openOnboarding()" style="font-size:11.5px;">
+        <div class="nav-dot" style="background:rgba(249,115,22,.4);box-shadow:0 0 6px rgba(249,115,22,.5);"></div>
+        Connect Integrations
+      </div>
+      <div class="nav-item" onclick="playNav(this)"><div class="nav-dot"></div>Settings</div>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="topbar">
+      <div>
+        <div class="page-title">Dashboard</div>
+        <div class="page-sub">Thursday, March 19 · Bella's Salon & Co.</div>
+      </div>
+      <div class="topbar-right">
+        <div class="btn-kbd" onclick="openCmd()" title="Command palette">⌘K</div>
+        <button class="btn btn-ghost" onclick="playGhost(this,event)">Sync Square</button>
+        <button class="btn btn-primary" onclick="playSuccess(this,event)">Run Predictions</button>
+      </div>
+    </div>
+
+    <div class="content-row">
+      <div class="content-left">
+
+        <!-- TABS + CHART TOGGLE -->
+        <div class="row-bar">
+          <div class="tabs">
+            <div class="tab active" onclick="playTab(this)">Overview</div>
+            <div class="tab" onclick="playTab(this)">At-Risk</div>
+            <div class="tab" onclick="playTab(this)">Loyal</div>
+            <div class="tab" onclick="playTab(this)">New</div>
+          </div>
+          <div class="chart-toggle">
+            <div class="ctab active" onclick="switchChart(this,'spark')">〰 Sparkline</div>
+            <div class="ctab" onclick="switchChart(this,'bar')">▌▌ Bar</div>
+            <div class="ctab" onclick="switchChart(this,'num')">123 Numbers</div>
+          </div>
+        </div>
+
+        <!-- STAT CARDS -->
+        <div class="stats-grid">
+
+          <!-- Customers -->
+          <div class="stat-card" onclick="playTick(this,event)">
+            <div class="stat-label">Total Customers</div>
+            <div class="stat-value orange" data-target="248" data-prefix="">0</div>
+            <div class="stat-chart">
+              <div class="spark-vis">
+                <svg class="sparkline" viewBox="0 0 100 40" preserveAspectRatio="none">
+                  <defs><linearGradient id="g1" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#f97316" stop-opacity=".22"/><stop offset="100%" stop-color="#f97316" stop-opacity="0"/></linearGradient></defs>
+                  <path class="spark-fill" style="fill:url(#g1)" d="M0,30 C10,28 20,26 30,20 S50,22 60,14 S80,8 100,4 L100,40 L0,40Z"/>
+                  <path class="spark-path spark-anim" style="stroke:#f97316;animation-delay:.3s" d="M0,30 C10,28 20,26 30,20 S50,22 60,14 S80,8 100,4"/>
+                  <circle class="spark-dot" cx="100" cy="4" r="2.5" style="fill:#f97316;animation:fadeIn .3s 1.3s forwards;opacity:0"/>
+                </svg>
+              </div>
+              <div class="bar-vis" style="display:none"><div class="bar-chart" id="bc1"></div></div>
+              <div class="num-vis" style="display:none"><span>Jul <b style="color:#444">201</b></span><span>Sep <b style="color:#444">218</b></span><span>Dec <b style="color:#444">236</b></span><span>Now <b style="color:#f97316;text-shadow:0 0 8px rgba(249,115,22,.3)">248</b></span></div>
+            </div>
+            <span class="stat-badge badge-orange">+12 this month</span>
+          </div>
+
+          <!-- Revenue -->
+          <div class="stat-card" onclick="playTick(this,event)">
+            <div class="stat-label">Total Revenue</div>
+            <div class="stat-value orange" data-target="38400" data-prefix="$" data-suffix="k" data-divisor="1000">$0k</div>
+            <div class="stat-chart">
+              <div class="spark-vis">
+                <svg class="sparkline" viewBox="0 0 100 40" preserveAspectRatio="none">
+                  <defs><linearGradient id="g2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#f97316" stop-opacity=".2"/><stop offset="100%" stop-color="#f97316" stop-opacity="0"/></linearGradient></defs>
+                  <path class="spark-fill" style="fill:url(#g2)" d="M0,36 C12,30 24,32 36,22 S52,18 62,24 S78,8 100,2 L100,40 L0,40Z"/>
+                  <path class="spark-path spark-anim" style="stroke:#f97316;animation-delay:.4s" d="M0,36 C12,30 24,32 36,22 S52,18 62,24 S78,8 100,2"/>
+                  <circle class="spark-dot" cx="100" cy="2" r="2.5" style="fill:#f97316;animation:fadeIn .3s 1.4s forwards;opacity:0"/>
+                </svg>
+              </div>
+              <div class="bar-vis" style="display:none"><div class="bar-chart" id="bc2"></div></div>
+              <div class="num-vis" style="display:none"><span>Jul <b style="color:#444">$26k</b></span><span>Sep <b style="color:#444">$29k</b></span><span>Dec <b style="color:#444">$34k</b></span><span>Now <b style="color:#f97316;text-shadow:0 0 8px rgba(249,115,22,.3)">$38.4k</b></span></div>
+            </div>
+            <span class="stat-badge badge-orange">+$4.2k vs last mo</span>
+          </div>
+
+          <!-- Churn Risk — DONUT -->
+          <div class="stat-card" onclick="playTick(this,event)">
+            <div class="stat-label">High Churn Risk</div>
+            <div class="donut-wrap">
+              <div class="donut-ring">
+                <svg width="54" height="54" viewBox="0 0 54 54">
+                  <circle class="donut-bg" cx="27" cy="27" r="21"/>
+                  <circle class="donut-fill" id="donutFill" cx="27" cy="27" r="21" style="stroke-dasharray:132"/>
+                </svg>
+                <div class="donut-label" id="donutLabel">0%</div>
+              </div>
+              <div>
+                <div class="stat-value red" style="font-size:24px;margin-bottom:0" data-target="31" data-prefix="">0</div>
+                <div style="font-size:10px;color:#333;margin-top:3px">customers</div>
+              </div>
+            </div>
+            <div class="stat-chart" style="margin-bottom:0">
+              <div class="spark-vis">
+                <svg class="sparkline" viewBox="0 0 100 40" preserveAspectRatio="none">
+                  <defs><linearGradient id="g3" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#ef4444" stop-opacity=".18"/><stop offset="100%" stop-color="#ef4444" stop-opacity="0"/></linearGradient></defs>
+                  <path class="spark-fill" style="fill:url(#g3)" d="M0,20 C14,24 24,18 36,28 S48,20 60,16 S76,24 100,14 L100,40 L0,40Z"/>
+                  <path class="spark-path spark-anim" style="stroke:#ef4444;animation-delay:.5s" d="M0,20 C14,24 24,18 36,28 S48,20 60,16 S76,24 100,14"/>
+                  <circle cx="100" cy="14" r="2.5" style="fill:#ef4444;filter:drop-shadow(0 0 3px rgba(239,68,68,.8));animation:fadeIn .3s 1.5s forwards;opacity:0"/>
+                </svg>
+              </div>
+              <div class="bar-vis" style="display:none"><div class="bar-chart" id="bc3"></div></div>
+              <div class="num-vis" style="display:none"><span>Jul <b style="color:#444">44</b></span><span>Sep <b style="color:#444">38</b></span><span>Dec <b style="color:#444">35</b></span><span>Now <b style="color:#ef4444;text-shadow:0 0 8px rgba(239,68,68,.3)">31</b></span></div>
+            </div>
+            <span class="stat-badge badge-red">Needs attention</span>
+          </div>
+
+          <!-- Avg Visits -->
+          <div class="stat-card" onclick="playTick(this,event)">
+            <div class="stat-label">Avg Visits / Customer</div>
+            <div class="stat-value green" data-target="62" data-prefix="" data-decimal="1">0</div>
+            <div class="stat-chart">
+              <div class="spark-vis">
+                <svg class="sparkline" viewBox="0 0 100 40" preserveAspectRatio="none">
+                  <defs><linearGradient id="g4" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#22c55e" stop-opacity=".18"/><stop offset="100%" stop-color="#22c55e" stop-opacity="0"/></linearGradient></defs>
+                  <path class="spark-fill" style="fill:url(#g4)" d="M0,32 C12,28 22,30 36,24 S50,26 62,18 S78,14 100,10 L100,40 L0,40Z"/>
+                  <path class="spark-path spark-anim" style="stroke:#22c55e;animation-delay:.6s" d="M0,32 C12,28 22,30 36,24 S50,26 62,18 S78,14 100,10"/>
+                  <circle cx="100" cy="10" r="2.5" style="fill:#22c55e;filter:drop-shadow(0 0 3px rgba(34,197,94,.8));animation:fadeIn .3s 1.6s forwards;opacity:0"/>
+                </svg>
+              </div>
+              <div class="bar-vis" style="display:none"><div class="bar-chart" id="bc4"></div></div>
+              <div class="num-vis" style="display:none"><span>Jul <b style="color:#444">4.1</b></span><span>Sep <b style="color:#444">4.8</b></span><span>Dec <b style="color:#444">5.5</b></span><span>Now <b style="color:#22c55e;text-shadow:0 0 8px rgba(34,197,94,.3)">6.2</b></span></div>
+            </div>
+            <span class="stat-badge badge-green">Above avg</span>
+          </div>
+
+        </div>
+
+        <!-- TABLE -->
+        <div class="section-header">
+          <div class="section-title">Customer Intelligence</div>
+          <button class="btn btn-ghost" style="font-size:11.5px;padding:6px 12px;" onclick="playGhost(this,event)">Export CSV</button>
+        </div>
+        <div class="table-wrap">
+          <div class="table-head"><span>Customer</span><span>Visits</span><span>Spent</span><span>Last Visit</span><span>Risk</span></div>
+
+          <div class="table-row" onclick="openPanel({name:'Sarah Johnson',email:'sarah@email.com',initials:'SJ',color:'#f97316',bg:'#180800',visits:14,spent:'$1,240',last:'32 days ago',risk:'HIGH',riskPct:82,churn:'high',nextVisit:'~45 days',ltv:'$6,200',products:'Manicure, Gel Polish',insight:'Sarah has significantly reduced her visit frequency over the past 2 months. Based on her history she is likely shopping competitors. A re-engagement offer within 7 days is recommended.'});playRow(this,event)">
+            <div class="customer-name"><div class="avatar" style="background:#180800;color:#f97316;">SJ</div><div><div>Sarah Johnson</div><div class="customer-email">sarah@email.com</div></div></div>
+            <div class="col-value">14</div><div class="col-money">$1,240</div><div class="col-value">32d ago</div><div><span class="risk-high">HIGH</span></div>
+          </div>
+
+          <div class="table-row" onclick="openPanel({name:'Marcus Williams',email:'marcus@email.com',initials:'MW',color:'#fb923c',bg:'#180e00',visits:9,spent:'$890',last:'18 days ago',risk:'MED',riskPct:48,churn:'medium',nextVisit:'~22 days',ltv:'$3,800',products:'Haircut, Fade',insight:'Marcus visits regularly but his spending per visit is declining. He may be skipping add-on services. Consider a bundled package offer on his next visit.'});playRow(this,event)">
+            <div class="customer-name"><div class="avatar" style="background:#180e00;color:#fb923c;">MW</div><div><div>Marcus Williams</div><div class="customer-email">marcus@email.com</div></div></div>
+            <div class="col-value">9</div><div class="col-money">$890</div><div class="col-value">18d ago</div><div><span class="risk-med">MED</span></div>
+          </div>
+
+          <div class="table-row" onclick="openPanel({name:'Priya Lalwani',email:'priya@email.com',initials:'PL',color:'#22c55e',bg:'#001808',visits:27,spent:'$3,410',last:'3 days ago',risk:'LOW',riskPct:12,churn:'low',nextVisit:'~8 days',ltv:'$14,500',products:'Full Set, Pedicure, Wax',insight:'Priya is your highest-value loyal customer. She visits every 10 days on average and consistently tries new services. Ideal candidate for a VIP loyalty tier or referral program.'});playRow(this,event)">
+            <div class="customer-name"><div class="avatar" style="background:#001808;color:#22c55e;">PL</div><div><div>Priya Lalwani</div><div class="customer-email">priya@email.com</div></div></div>
+            <div class="col-value">27</div><div class="col-money">$3,410</div><div class="col-value">3d ago</div><div><span class="risk-low">LOW</span></div>
+          </div>
+
+          <div class="table-row" onclick="openPanel({name:'David Kim',email:'david@email.com',initials:'DK',color:'#84cc16',bg:'#0c1800',visits:19,spent:'$2,180',last:'7 days ago',risk:'LOW',riskPct:18,churn:'low',nextVisit:'~12 days',ltv:'$9,100',products:'Haircut, Color, Treatment',insight:'David is a consistent mid-tier customer with growing spend. His LTV trajectory is strong. He is likely to become a top-10 customer within 3 months if current trends hold.'});playRow(this,event)">
+            <div class="customer-name"><div class="avatar" style="background:#0c1800;color:#84cc16;">DK</div><div><div>David Kim</div><div class="customer-email">david@email.com</div></div></div>
+            <div class="col-value">19</div><div class="col-money">$2,180</div><div class="col-value">7d ago</div><div><span class="risk-low">LOW</span></div>
+          </div>
+
+          <div class="table-row" onclick="openPanel({name:'Aisha Thompson',email:'aisha@email.com',initials:'AT',color:'#ef4444',bg:'#180000',visits:5,spent:'$420',last:'41 days ago',risk:'HIGH',riskPct:91,churn:'high',nextVisit:'Unknown',ltv:'$1,800',products:'Braids, Trim',insight:'Aisha has not visited in over 6 weeks after 5 consistent visits. This drop-off pattern strongly indicates churn. An immediate win-back SMS or discount offer is highly recommended.'});playRow(this,event)">
+            <div class="customer-name"><div class="avatar" style="background:#180000;color:#ef4444;">AT</div><div><div>Aisha Thompson</div><div class="customer-email">aisha@email.com</div></div></div>
+            <div class="col-value">5</div><div class="col-money">$420</div><div class="col-value">41d ago</div><div><span class="risk-high">HIGH</span></div>
+          </div>
+        </div>
+
+      </div><!-- /content-left -->
+
+      <!-- LIVE FEED -->
+      <div class="live-feed">
+        <div class="feed-title"><div class="feed-dot"></div>Live Activity</div>
+        <div id="feedList">
+          <div class="feed-item"><div class="feed-name">Priya Lalwani</div><div class="feed-action">visited · booked full set</div><div class="feed-time">2 hours ago</div></div>
+          <div class="feed-item"><div class="feed-name">Aisha Thompson <span class="feed-badge risk-high" style="border-radius:4px;padding:1px 5px;font-size:9px">FLAGGED</span></div><div class="feed-action">41 days inactive</div><div class="feed-time">just now</div></div>
+          <div class="feed-item"><div class="feed-name">David Kim</div><div class="feed-action">prediction updated</div><div class="feed-time">4 hours ago</div></div>
+          <div class="feed-item"><div class="feed-name">Marcus Williams</div><div class="feed-action">visited · haircut only</div><div class="feed-time">yesterday</div></div>
+          <div class="feed-item"><div class="feed-name">Square Sync</div><div class="feed-action">248 customers synced</div><div class="feed-time">6 hours ago</div></div>
+          <div class="feed-item"><div class="feed-name">Sarah Johnson <span class="feed-badge risk-high" style="border-radius:4px;padding:1px 5px;font-size:9px">HIGH RISK</span></div><div class="feed-action">32 days inactive</div><div class="feed-time">2 days ago</div></div>
+        </div>
+      </div>
+
+    </div><!-- /content-row -->
+  </div><!-- /main -->
+</div><!-- /layout -->
+
+<!-- SLIDE PANEL -->
+<div class="panel-overlay" id="panelOverlay" onclick="closePanel()"></div>
+<div class="slide-panel" id="slidePanel">
+  <div class="panel-close" onclick="closePanel()">✕</div>
+  <div class="panel-avatar" id="pAvatar" style="background:#180800;color:#f97316;">SJ</div>
+  <div class="panel-name" id="pName">Sarah Johnson</div>
+  <div class="panel-email" id="pEmail">sarah@email.com</div>
+
+  <div class="panel-section">
+    <div class="panel-section-title">Churn Risk</div>
+    <div class="risk-ring-big">
+      <svg width="90" height="90" viewBox="0 0 90 90">
+        <circle fill="none" stroke="#111" stroke-width="7" cx="45" cy="45" r="35"/>
+        <circle id="panelRing" fill="none" stroke="#ef4444" stroke-width="7" stroke-linecap="round"
+          cx="45" cy="45" r="35" stroke-dasharray="220" stroke-dashoffset="220"
+          style="transition:stroke-dashoffset 1s cubic-bezier(.34,1.2,.64,1);filter:drop-shadow(0 0 5px rgba(239,68,68,.5))"/>
+      </svg>
+      <div id="panelRingLabel" style="font-size:22px;font-weight:800;color:#ef4444;text-shadow:0 0 12px rgba(239,68,68,.4);margin-top:-8px;">82%</div>
+      <div id="panelRiskBadge" style="margin-top:6px;"><span class="risk-high">HIGH RISK</span></div>
+    </div>
+  </div>
+
+  <div class="panel-section">
+    <div class="panel-section-title">Prediction Details</div>
+    <div class="panel-stat"><span class="panel-stat-label">Next Visit (est.)</span><span class="panel-stat-value" id="pNextVisit">~45 days</span></div>
+    <div class="panel-stat"><span class="panel-stat-label">Lifetime Value</span><span class="panel-stat-value" id="pLTV">$6,200</span></div>
+    <div class="panel-stat"><span class="panel-stat-label">Total Visits</span><span class="panel-stat-value" id="pVisits">14</span></div>
+    <div class="panel-stat"><span class="panel-stat-label">Total Spent</span><span class="panel-stat-value" id="pSpent">$1,240</span></div>
+    <div class="panel-stat"><span class="panel-stat-label">Top Services</span><span class="panel-stat-value" id="pProducts">Manicure, Gel Polish</span></div>
+  </div>
+
+  <div class="panel-section">
+    <div class="panel-section-title">AI Insight</div>
+    <div class="insight-box" id="pInsight">Sarah has significantly reduced her visit frequency over the past 2 months.</div>
+  </div>
+
+  <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:4px;" onclick="playSuccess(this,{clientX:window.innerWidth-190,clientY:400})">Send Re-engagement</button>
+</div>
+
+<!-- CMD PALETTE -->
+<div class="cmd-overlay" id="cmdOverlay" onclick="closeCmd()">
+  <div class="cmd-modal" onclick="event.stopPropagation()">
+    <div class="cmd-input-wrap">
+      <span class="cmd-icon">⌘</span>
+      <input class="cmd-input" id="cmdInput" placeholder="Search customers, run predictions, sync..." autofocus oninput="filterCmd(this.value)"/>
+    </div>
+    <div class="cmd-results" id="cmdResults">
+      <div class="cmd-item selected"><div class="cmd-item-icon">👤</div>Sarah Johnson — High Risk</div>
+      <div class="cmd-item"><div class="cmd-item-icon">👤</div>Aisha Thompson — High Risk</div>
+      <div class="cmd-item"><div class="cmd-item-icon">▶</div>Run Predictions</div>
+      <div class="cmd-item"><div class="cmd-item-icon">↻</div>Sync Square</div>
+      <div class="cmd-item"><div class="cmd-item-icon">⚡</div>At-Risk Customers (31)</div>
+      <div class="cmd-item"><div class="cmd-item-icon">📊</div>Export CSV</div>
+    </div>
+    <div class="cmd-hint">
+      <span><kbd>↑↓</kbd> navigate</span>
+      <span><kbd>↵</kbd> select</span>
+      <span><kbd>Esc</kbd> close</span>
+    </div>
+  </div>
+</div>
+
+<!-- ONBOARDING -->
+<div class="onboarding" id="onboarding">
+  <div class="ob-title">Connect your first integration</div>
+  <div class="ob-sub">Foresight needs your sales data to generate AI predictions</div>
+  <div class="ob-cards">
+    <div class="ob-card pulse-card" onclick="playSuccess(this,{clientX:window.innerWidth/2,clientY:window.innerHeight/2})">
+      <div class="ob-icon">◼</div>
+      <div class="ob-name">Square</div>
+      <div class="ob-status">POS & payments</div>
+      <div class="ob-connect">Connect →</div>
+    </div>
+    <div class="ob-card" onclick="playGhost(this,event)">
+      <div class="ob-icon">🛒</div>
+      <div class="ob-name">Shopify</div>
+      <div class="ob-status">E-commerce</div>
+      <div class="ob-connect" style="color:#333;">Coming soon</div>
+    </div>
+    <div class="ob-card" onclick="playGhost(this,event)">
+      <div class="ob-icon">🍴</div>
+      <div class="ob-name">Toast</div>
+      <div class="ob-status">Restaurants</div>
+      <div class="ob-connect" style="color:#333;">Coming soon</div>
+    </div>
+    <div class="ob-card" onclick="playGhost(this,event)">
+      <div class="ob-icon">💳</div>
+      <div class="ob-name">Stripe</div>
+      <div class="ob-status">Payments</div>
+      <div class="ob-connect" style="color:#333;">Coming soon</div>
+    </div>
+  </div>
+  <div class="ob-close" onclick="closeOnboarding()">← Back to dashboard</div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"><div class="toast-dot"></div><span id="toastMsg">Done</span></div>
+
+<style>
+@keyframes fadeIn { to { opacity:1; } }
+
+/* ── LOAD-IN ANIMATIONS ─────────────────────────────────────────────── */
+.stat-card { opacity:0; transform:translateY(18px); }
+@keyframes cardEnter {
+  from { opacity:0; transform:translateY(18px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+.stat-card.entered { animation:cardEnter .55s cubic-bezier(.34,1.15,.64,1) forwards; }
+
+.table-row { opacity:0; transform:translateX(-8px); }
+@keyframes rowEnter {
+  from { opacity:0; transform:translateX(-8px); }
+  to   { opacity:1; transform:translateX(0); }
+}
+.table-row.entered { animation:rowEnter .4s ease forwards; }
+
+/* bars start at 0, grow via transition */
+.bar { height:0 !important; transition:height .7s cubic-bezier(.34,1.1,.64,1); }
+.bar.grown { height:var(--h) !important; }
+</style>
+
+<script>
+// ── AUDIO ─────────────────────────────────────────────────────────────────
+const AC = new (window.AudioContext||window.webkitAudioContext)();
+function resume(){ if(AC.state==='suspended') AC.resume(); }
+
+function note(freq,start,vol,dur,type='sine'){
+  const o=AC.createOscillator(),g=AC.createGain();
+  o.connect(g);g.connect(AC.destination);
+  o.type=type;o.frequency.setValueAtTime(freq,start);
+  g.gain.setValueAtTime(0,start);
+  g.gain.linearRampToValueAtTime(vol,start+.02);
+  g.gain.exponentialRampToValueAtTime(.001,start+dur);
+  o.start(start);o.stop(start+dur+.02);
+}
+
+function playNav(el){
+  resume();
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  el.classList.add('active');
+  note(480,AC.currentTime,.09,.1);
+}
+function playTab(el){
+  resume();
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  note(660,AC.currentTime,.08,.08,'triangle');
+}
+function playGhost(el,e){ resume();ripple(el,e);note(700,AC.currentTime,.08,.07); }
+function playTick(el,e){ resume();ripple(el,e);const t=AC.currentTime;note(820,t,.08,.08);note(640,t+.05,.05,.06); }
+function playRow(el,e){ resume();note(600,AC.currentTime,.06,.06); }
+function playSuccess(el,e){
+  resume();
+  if(e&&el.classList&&el.classList.contains('btn'))ripple(el,e);
+  spawnParticles(e);
+  showToast('Predictions complete — 3 customers flagged');
+  const t=AC.currentTime;
+  note(370,t,.18,.3);note(466,t+.13,.2,.3);note(554,t+.24,.16,.35);note(1108,t+.24,.06,.25);
+}
+
+// ── CHART TOGGLE ─────────────────────────────────────────────────────────
+function switchChart(el,mode){
+  resume();
+  document.querySelectorAll('.ctab').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  note(560,AC.currentTime,.07,.07,'triangle');
+  document.querySelectorAll('.spark-vis').forEach(v=>v.style.display=mode==='spark'?'':'none');
+  document.querySelectorAll('.bar-vis').forEach(v=>v.style.display=mode==='bar'?'':'none');
+  document.querySelectorAll('.num-vis').forEach(v=>v.style.display=mode==='num'?'flex':'none');
+}
+
+// ── BAR CHART DATA ────────────────────────────────────────────────────────
+const barData={
+  bc1:[45,52,48,60,55,72,68,85,100],
+  bc2:[38,50,44,62,45,58,78,82,100],
+  bc3:[55,62,48,70,55,45,65,50,40],
+  bc4:[40,50,45,62,58,72,68,82,100]
+};
+const barColors={bc1:'orange',bc2:'orange',bc3:'red',bc4:'green'};
+// Build bars starting at 0; growBars() will animate them up later
+Object.keys(barData).forEach(id=>{
+  const el=document.getElementById(id);
+  if(!el)return;
+  barData[id].forEach(h=>{
+    const b=document.createElement('div');
+    b.className='bar '+barColors[id];
+    b.style.setProperty('--h', h+'%');
+    el.appendChild(b);
+  });
+});
+
+function growBars(id, delayBase){
+  const bars=document.querySelectorAll('#'+id+' .bar');
+  bars.forEach((b,i)=>{
+    setTimeout(()=>b.classList.add('grown'), delayBase + i*60);
+  });
+}
+
+// ── COUNTER ANIMATION ─────────────────────────────────────────────────────
+// startFreq: the base pitch to play a rising tone sequence during counting
+function animateCounter(el, startFreq, onDone){
+  const target   = parseInt(el.dataset.target);
+  const prefix   = el.dataset.prefix  || '';
+  const suffix   = el.dataset.suffix  || '';
+  const divisor  = parseFloat(el.dataset.divisor) || 1;
+  const decimal  = parseInt(el.dataset.decimal)   || 0;
+  const duration = 2200; // slow, deliberate climb
+
+  // Play a soft rising tone at start of this counter
+  if(startFreq){
+    const t = AC.currentTime;
+    note(startFreq,        t,       .06, .18);
+    note(startFreq * 1.25, t + .18, .04, .15);
+  }
+
+  // Subtle tick every ~300ms while counting
+  let lastTick = 0;
+  const start = performance.now();
+
+  function tick(now){
+    const elapsed = now - start;
+    const p    = Math.min(elapsed / duration, 1);
+    const ease = 1 - Math.pow(1 - p, 3); // ease-out cubic
+    const val  = (target * ease) / divisor;
+    el.textContent = prefix + (decimal ? val.toFixed(decimal) : Math.round(val)) + suffix;
+
+    // Quiet tick sound roughly every 300ms (not every frame)
+    if(startFreq && elapsed - lastTick > 300 && p < 0.95){
+      const pitch = startFreq * (0.9 + ease * 0.4);
+      note(pitch, AC.currentTime, .025, .06);
+      lastTick = elapsed;
+    }
+
+    if(p < 1){
+      requestAnimationFrame(tick);
+    } else {
+      // Clamp to exact final value
+      const final = (target / divisor);
+      el.textContent = prefix + (decimal ? final.toFixed(decimal) : Math.round(final)) + suffix;
+      if(onDone) onDone();
+    }
+  }
+  requestAnimationFrame(tick);
+}
+
+// ── DONUT ANIMATION ───────────────────────────────────────────────────────
+function animateDonut(delay, onDone){
+  const pct    = 31 / 248;
+  const circ   = 132;
+  const target = Math.round(pct * 100);
+  const offset = circ - (circ * pct);
+
+  setTimeout(()=>{
+    // Transition duration synced to counter (~2.2s)
+    document.getElementById('donutFill').style.transition = 'stroke-dashoffset 2.2s cubic-bezier(.4,0,.2,1)';
+    document.getElementById('donutFill').style.strokeDashoffset = offset;
+
+    const label = document.getElementById('donutLabel');
+    const duration = 2200;
+    const start = performance.now();
+
+    // Play a low ominous tone for the red churn ring
+    note(220, AC.currentTime, .05, .3);
+
+    function tick(now){
+      const p  = Math.min((now - start) / duration, 1);
+      const v  = Math.round(target * (1 - Math.pow(1-p, 3)));
+      label.textContent = v + '%';
+      if(p < 1) requestAnimationFrame(tick);
+      else {
+        label.textContent = target + '%';
+        // Soft warning tone on completion
+        note(330, AC.currentTime, .05, .2);
+        note(277, AC.currentTime + .15, .04, .25);
+        if(onDone) onDone();
+      }
+    }
+    requestAnimationFrame(tick);
+  }, delay);
+}
+
+// ── SLIDE PANEL ───────────────────────────────────────────────────────────
+function openPanel(d){
+  const riskColor=d.churn==='high'?'#ef4444':d.churn==='medium'?'#f97316':'#22c55e';
+  const riskGlow=d.churn==='high'?'rgba(239,68,68,.4)':d.churn==='medium'?'rgba(249,115,22,.4)':'rgba(34,197,94,.3)';
+  const riskCls=d.churn==='high'?'risk-high':d.churn==='medium'?'risk-med':'risk-low';
+  const riskLabel=d.churn==='high'?'HIGH RISK':d.churn==='medium'?'MED RISK':'LOW RISK';
+
+  document.getElementById('pAvatar').style.background=d.bg;
+  document.getElementById('pAvatar').style.color=d.color;
+  document.getElementById('pAvatar').textContent=d.initials;
+  document.getElementById('pName').textContent=d.name;
+  document.getElementById('pEmail').textContent=d.email;
+  document.getElementById('pNextVisit').textContent=d.nextVisit;
+  document.getElementById('pLTV').textContent=d.ltv;
+  document.getElementById('pVisits').textContent=d.visits;
+  document.getElementById('pSpent').textContent=d.spent;
+  document.getElementById('pProducts').textContent=d.products;
+  document.getElementById('pInsight').textContent=d.insight;
+
+  // Ring
+  const ring=document.getElementById('panelRing');
+  ring.style.stroke=riskColor;
+  ring.style.filter=`drop-shadow(0 0 5px ${riskGlow})`;
+  ring.style.strokeDashoffset=220;
+  setTimeout(()=>{ ring.style.strokeDashoffset=220-(220*(d.riskPct/100)); },100);
+
+  const rl=document.getElementById('panelRingLabel');
+  rl.style.color=riskColor;
+  rl.style.textShadow=`0 0 12px ${riskGlow}`;
+  let v=0;
+  const iv=setInterval(()=>{ v=Math.min(v+2,d.riskPct);rl.textContent=v+'%';if(v>=d.riskPct)clearInterval(iv); },20);
+
+  document.getElementById('panelRiskBadge').innerHTML=`<span class="${riskCls}">${riskLabel}</span>`;
+
+  document.getElementById('panelOverlay').classList.add('open');
+  document.getElementById('slidePanel').classList.add('open');
+  note(520,AC.currentTime,.07,.12);
+}
+
+function closePanel(){
+  document.getElementById('panelOverlay').classList.remove('open');
+  document.getElementById('slidePanel').classList.remove('open');
+  note(400,AC.currentTime,.06,.1);
+}
+
+// ── CMD PALETTE ───────────────────────────────────────────────────────────
+const allCmds=[
+  '👤 Sarah Johnson — High Risk',
+  '👤 Aisha Thompson — High Risk',
+  '▶ Run Predictions',
+  '↻ Sync Square',
+  '⚡ At-Risk Customers (31)',
+  '📊 Export CSV',
+  '📋 View Reports',
+  '⚙ Settings',
+];
+
+function openCmd(){
+  resume();note(700,AC.currentTime,.07,.08);
+  document.getElementById('cmdOverlay').classList.add('open');
+  setTimeout(()=>document.getElementById('cmdInput').focus(),50);
+}
+function closeCmd(){
+  document.getElementById('cmdOverlay').classList.remove('open');
+  document.getElementById('cmdInput').value='';
+  note(450,AC.currentTime,.06,.08);
+}
+function filterCmd(val){
+  const res=document.getElementById('cmdResults');
+  const filtered=val?allCmds.filter(c=>c.toLowerCase().includes(val.toLowerCase())):allCmds;
+  res.innerHTML=filtered.map((c,i)=>`<div class="cmd-item${i===0?' selected':''}" onclick="closeCmd()"><div class="cmd-item-icon">${c.split(' ')[0]}</div>${c.slice(c.indexOf(' ')+1)}</div>`).join('');
+  note(680,AC.currentTime,.04,.04);
+}
+
+document.addEventListener('keydown',e=>{
+  if((e.metaKey||e.ctrlKey)&&e.key==='k'){ e.preventDefault();openCmd(); }
+  if(e.key==='Escape'){ closeCmd();closePanel();closeOnboarding(); }
+});
+
+// ── ONBOARDING ────────────────────────────────────────────────────────────
+function openOnboarding(){ document.getElementById('onboarding').classList.add('open'); note(520,AC.currentTime,.08,.12); }
+function closeOnboarding(){ document.getElementById('onboarding').classList.remove('open'); note(420,AC.currentTime,.07,.1); }
+
+// ── RIPPLE ────────────────────────────────────────────────────────────────
+function ripple(el,e){
+  if(!e)return;
+  const r=document.createElement('span');r.className='ripple';
+  const rect=el.getBoundingClientRect();
+  r.style.left=(e.clientX-rect.left-7)+'px';r.style.top=(e.clientY-rect.top-7)+'px';
+  el.appendChild(r);setTimeout(()=>r.remove(),600);
+}
+
+// ── PARTICLES ─────────────────────────────────────────────────────────────
+function spawnParticles(e){
+  if(!e)return;
+  const cols=['#f97316','#fb923c','#fbbf24','#ef4444','#fdba74','#fff'];
+  for(let i=0;i<22;i++){
+    setTimeout(()=>{
+      const p=document.createElement('div');p.className='particle';
+      const s=4+Math.random()*6;
+      p.style.cssText=`left:${e.clientX+(Math.random()-.5)*90}px;top:${e.clientY+(Math.random()-.5)*50}px;width:${s}px;height:${s}px;background:${cols[Math.floor(Math.random()*cols.length)]};box-shadow:0 0 8px currentColor;animation-duration:${.7+Math.random()*.5}s;animation-delay:${Math.random()*.08}s;`;
+      document.body.appendChild(p);setTimeout(()=>p.remove(),1400);
+    },i*12);
+  }
+}
+
+// ── TOAST ─────────────────────────────────────────────────────────────────
+function showToast(msg){
+  const t=document.getElementById('toast');
+  document.getElementById('toastMsg').textContent=msg;
+  t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3500);
+}
+
+// ── INIT — staggered cinematic load sequence ───────────────────────────────
+window.addEventListener('load',()=>{
+  resume();
+
+  const cards    = document.querySelectorAll('.stat-card');
+  const rows     = document.querySelectorAll('.table-row');
+  const counters = document.querySelectorAll('.stat-value[data-target]');
+
+  // Card entry pitches — ascending, one per card
+  const pitches = [440, 494, 523, 587];
+
+  // ── Step 1: cards slide in one by one (0ms, 120ms, 240ms, 360ms)
+  cards.forEach((card, i)=>{
+    setTimeout(()=>{
+      card.classList.add('entered');
+      // Soft whoosh tone for each card entry
+      note(300 + i * 40, AC.currentTime, .04, .15, 'triangle');
+    }, i * 140);
+  });
+
+  // ── Step 2: counters + sparklines start after all cards are visible (~500ms)
+  counters.forEach((el, i)=>{
+    const delay = 500 + i * 350; // each counter starts 350ms after previous
+    setTimeout(()=>{
+      animateCounter(el, pitches[i]);
+    }, delay);
+  });
+
+  // ── Step 3: donut starts with counter #3 (the churn card)
+  animateDonut(500 + 2 * 350);
+
+  // ── Step 4: bar charts grow after their matching counter starts
+  // (only affects bar view — not visible unless user switches to bar mode,
+  //  but ready and pre-animated for when they do)
+  ['bc1','bc2','bc3','bc4'].forEach((id, i)=>{
+    growBars(id, 500 + i * 350 + 200);
+  });
+
+  // ── Step 5: table rows fade in after stats finish (~3s total)
+  rows.forEach((row, i)=>{
+    setTimeout(()=>{
+      row.classList.add('entered');
+      note(360 + i * 18, AC.currentTime, .025, .08);
+    }, 3100 + i * 90);
+  });
+
+  // ── Step 6: completion — soft resolved chord when everything is done (~3.8s)
+  setTimeout(()=>{
+    const t = AC.currentTime;
+    note(370, t,      .08, .4);   // F#
+    note(466, t+.1,   .07, .4);   // A#
+    note(554, t+.2,   .06, .4);   // C#
+  }, 3800);
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Foresight — Charts</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap');
+
+  :root {
+    --p0:#FF6040; --p1:#FF8060; --p2:#FFAA88; --p3:#FFD0BB; --pd1:#E04020; --pd2:#B82E10;
+    --pa10:rgba(255,96,64,0.10); --pa20:rgba(255,96,64,0.20); --pa40:rgba(255,96,64,0.40);
+    --glow:0 0 6px #FF6040,0 0 20px rgba(255,96,64,0.45),0 0 60px rgba(255,96,64,0.18);
+    --glow-sm:0 0 4px #FF6040,0 0 12px rgba(255,96,64,0.35);
+    --glow-xl:0 0 10px #FF6040,0 0 40px rgba(255,96,64,0.55),0 0 90px rgba(255,96,64,0.22);
+    --bg:#070608; --surface:#0e0b0a; --surface2:#150f0d;
+    --border:rgba(255,255,255,0.06); --border-c:rgba(255,96,64,0.20);
+    --text:#f5ede8; --muted:#6b5a52;
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-serif;overflow:hidden;height:100vh;}
+  body::before{content:'';position:fixed;inset:0;z-index:1000;pointer-events:none;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.025) 2px,rgba(0,0,0,0.025) 4px);}
+  #canvas{position:fixed;inset:0;z-index:0;pointer-events:none;}
+  .app{position:relative;z-index:1;display:flex;height:100vh;overflow:hidden;}
+
+  /* SIDEBAR */
+  .sidebar{width:224px;min-width:224px;background:linear-gradient(180deg,rgba(14,11,10,0.98),rgba(7,6,8,0.98));border-right:1px solid var(--border);display:flex;flex-direction:column;padding:20px 0;backdrop-filter:blur(20px);}
+  .logo-wrap{padding:0 18px 24px;}
+  .logo{font-size:22px;font-weight:900;letter-spacing:-1px;position:relative;display:inline-block;background:linear-gradient(90deg,var(--p0),var(--p2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;cursor:default;}
+  .logo::before,.logo::after{content:'Foresight';position:absolute;top:0;left:0;background:linear-gradient(90deg,var(--p0),var(--p2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+  .logo::before{animation:glitch1 4s infinite;clip-path:polygon(0 28%,100% 28%,100% 48%,0 48%);}
+  .logo::after{animation:glitch2 4s infinite;clip-path:polygon(0 62%,100% 62%,100% 76%,0 76%);}
+  @keyframes glitch1{0%,90%,100%{opacity:0;transform:translate(0,0)}91%{opacity:1;transform:translate(-3px,1px)}93%{opacity:1;transform:translate(3px,-1px)}95%{opacity:0}}
+  @keyframes glitch2{0%,92%,100%{opacity:0;transform:translate(0,0)}93%{opacity:1;transform:translate(3px,1px)}95%{opacity:1;transform:translate(-2px,0)}97%{opacity:0}}
+  .logo-tag{font-size:9px;font-family:'JetBrains Mono',monospace;color:var(--p0);opacity:.55;letter-spacing:.15em;text-transform:uppercase;margin-top:2px;}
+  .nav-label{font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);padding:4px 18px 6px;font-family:'JetBrains Mono',monospace;}
+  .nav-section{flex:1;}
+  .nav-item{display:flex;align-items:center;gap:10px;padding:9px 18px;font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;position:relative;overflow:hidden;transition:color .2s;user-select:none;}
+  .nav-item::before{content:'';position:absolute;inset:0;background:linear-gradient(90deg,var(--pa10),transparent);opacity:0;transition:opacity .2s;}
+  .nav-item::after{content:'';position:absolute;left:0;top:0;bottom:0;width:2px;background:linear-gradient(180deg,var(--p1),var(--pd1));box-shadow:var(--glow-sm);transform:scaleY(0);transform-origin:center;transition:transform .2s;}
+  .nav-item.active{color:var(--p1);}
+  .nav-item.active::before{opacity:1;}
+  .nav-item.active::after{transform:scaleY(1);}
+  .nav-item:hover:not(.active){color:#a08070;}
+  .nav-item:hover::before{opacity:.5;}
+  .nav-icon{width:16px;font-size:14px;display:flex;align-items:center;justify-content:center;opacity:.7;}
+  .nav-item.active .nav-icon{opacity:1;filter:drop-shadow(0 0 4px var(--p0));}
+  .nav-badge{margin-left:auto;background:var(--p0);color:#fff;font-size:10px;font-weight:700;border-radius:10px;padding:1px 6px;box-shadow:var(--glow-sm);animation:pulseBadge 2s ease-in-out infinite;}
+  .nav-badge.dim{background:var(--pd1);box-shadow:0 0 4px var(--pd1),0 0 12px rgba(224,64,32,.3);}
+  @keyframes pulseBadge{0%,100%{box-shadow:var(--glow-sm)}50%{box-shadow:0 0 8px var(--p0),0 0 24px rgba(255,96,64,.5)}}
+  .sidebar-footer{padding:14px 14px 0;}
+  .user-card{background:rgba(255,255,255,.025);border:1px solid var(--border);border-radius:10px;padding:10px 12px;display:flex;align-items:center;gap:10px;cursor:pointer;transition:all .2s;}
+  .user-card:hover{border-color:var(--border-c);background:var(--pa10);}
+  .avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--p0),var(--pd2));display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;box-shadow:var(--glow-sm);flex-shrink:0;}
+  .user-name{font-size:12px;font-weight:600;}
+  .user-role{font-size:10px;color:var(--muted);}
+  .status-dot{width:6px;height:6px;border-radius:50%;background:var(--p1);margin-left:auto;box-shadow:0 0 6px var(--p0);animation:blink 2s ease-in-out infinite;}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:.35}}
+
+  /* MAIN */
+  .main{flex:1;overflow-y:auto;padding:22px 26px;}
+  .main::-webkit-scrollbar{width:4px;}
+  .main::-webkit-scrollbar-thumb{background:var(--pa20);border-radius:2px;}
+
+  .page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
+  .page-title{font-size:24px;font-weight:800;letter-spacing:-.5px;}
+  .page-sub{font-size:12px;color:var(--muted);font-family:'JetBrains Mono',monospace;margin-top:2px;}
+  .live-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--p1);box-shadow:0 0 6px var(--p0);animation:blink 2s ease-in-out infinite;margin-right:5px;}
+  .header-actions{display:flex;gap:10px;align-items:center;}
+
+  /* BUTTONS */
+  .btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:none;outline:none;position:relative;overflow:hidden;transition:transform .15s,box-shadow .15s;user-select:none;}
+  .btn::after{content:'';position:absolute;inset:0;background:radial-gradient(circle at var(--mx,50%) var(--my,50%),rgba(255,255,255,.18),transparent 60%);opacity:0;transition:opacity .2s;}
+  .btn:hover::after{opacity:1;}
+  .btn:active{transform:scale(.97)!important;}
+  .ripple{position:absolute;border-radius:50%;transform:scale(0);animation:rippleAnim .5s linear;background:rgba(255,255,255,.25);pointer-events:none;}
+  @keyframes rippleAnim{to{transform:scale(4);opacity:0}}
+  .btn-primary{background:linear-gradient(135deg,var(--pa20),var(--pa10));border:1px solid var(--p0);color:var(--p1);box-shadow:var(--glow);animation:pulseBtn 2.5s ease-in-out infinite;}
+  .btn-primary:hover{box-shadow:var(--glow-xl);transform:translateY(-2px);}
+  @keyframes pulseBtn{0%,100%{box-shadow:var(--glow)}50%{box-shadow:var(--glow-xl)}}
+  .btn-ghost{background:rgba(255,255,255,.03);border:1px solid var(--border);color:var(--muted);font-size:12px;padding:7px 12px;transition:all .2s;}
+  .btn-ghost:hover{border-color:var(--border-c);color:var(--p1);background:var(--pa10);box-shadow:var(--glow-sm);}
+
+  /* STAT CARDS */
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px;}
+  .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px 18px;position:relative;overflow:hidden;cursor:pointer;transition:transform .25s,border-color .25s,box-shadow .25s;}
+  .stat-card:nth-child(1)::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,var(--p0),transparent 60%);}
+  .stat-card:nth-child(2)::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,var(--pd1),transparent 60%);}
+  .stat-card:nth-child(3)::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,var(--p1),transparent 60%);}
+  .stat-card:nth-child(4)::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,var(--p2),transparent 60%);}
+  .stat-card:nth-child(1):hover{transform:translateY(-4px);border-color:var(--border-c);box-shadow:0 8px 30px rgba(255,96,64,.12);}
+  .stat-card:nth-child(2):hover{transform:translateY(-4px);border-color:rgba(224,64,32,.25);box-shadow:0 8px 30px rgba(224,64,32,.12);}
+  .stat-card:nth-child(3):hover{transform:translateY(-4px);border-color:rgba(255,128,96,.25);box-shadow:0 8px 30px rgba(255,128,96,.12);}
+  .stat-card:nth-child(4):hover{transform:translateY(-4px);border-color:rgba(255,170,136,.25);box-shadow:0 8px 30px rgba(255,170,136,.12);}
+  .stat-card::after{content:'';position:absolute;inset:0;border-radius:14px;background:radial-gradient(ellipse at 0 0,rgba(255,96,64,.05),transparent 60%);opacity:0;transition:opacity .3s;}
+  .stat-card:hover::after{opacity:1;}
+  .stat-label{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);font-family:'JetBrains Mono',monospace;margin-bottom:6px;}
+  .stat-value{font-size:28px;font-weight:900;letter-spacing:-1px;font-variant-numeric:tabular-nums;}
+  .stat-card:nth-child(1) .stat-value{color:var(--p0);text-shadow:0 0 20px rgba(255,96,64,.55);}
+  .stat-card:nth-child(2) .stat-value{color:var(--pd1);text-shadow:0 0 20px rgba(224,64,32,.55);}
+  .stat-card:nth-child(3) .stat-value{color:var(--p1);text-shadow:0 0 20px rgba(255,128,96,.55);}
+  .stat-card:nth-child(4) .stat-value{color:var(--p2);text-shadow:0 0 20px rgba(255,170,136,.55);}
+  .stat-trend{font-size:10px;font-family:'JetBrains Mono',monospace;margin-top:3px;}
+  .stat-trend.up{color:var(--p1);} .stat-trend.dn{color:var(--pd1);}
+  .stat-bar{height:2px;background:rgba(255,255,255,.05);border-radius:1px;margin-top:8px;overflow:hidden;}
+  .stat-bar-fill{height:100%;border-radius:1px;transition:width 1.8s cubic-bezier(.4,0,.2,1);}
+  .stat-card:nth-child(1) .stat-bar-fill{background:linear-gradient(90deg,var(--p0),var(--pa20));box-shadow:0 0 8px var(--p0);}
+  .stat-card:nth-child(2) .stat-bar-fill{background:linear-gradient(90deg,var(--pd1),rgba(224,64,32,.2));box-shadow:0 0 8px var(--pd1);}
+  .stat-card:nth-child(3) .stat-bar-fill{background:linear-gradient(90deg,var(--p1),rgba(255,128,96,.2));}
+  .stat-card:nth-child(4) .stat-bar-fill{background:linear-gradient(90deg,var(--p2),rgba(255,170,136,.15));}
+
+  /* CHART GRID */
+  .charts{display:grid;grid-template-columns:1.6fr 1fr;gap:12px;margin-bottom:14px;}
+  .chart-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px 18px;position:relative;overflow:hidden;}
+  .chart-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,var(--p0),transparent 60%);}
+  .chart-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+  .chart-title{font-size:13px;font-weight:700;}
+  .chart-sub{font-size:10px;color:var(--muted);font-family:'JetBrains Mono',monospace;}
+  .chart-tabs{display:flex;gap:4px;}
+  .chart-tab{font-size:10px;padding:3px 8px;border-radius:4px;cursor:pointer;color:var(--muted);border:1px solid transparent;transition:all .15s;font-family:'JetBrains Mono',monospace;}
+  .chart-tab.active{color:var(--p0);border-color:var(--border-c);background:var(--pa10);}
+  .chart-tab:hover:not(.active){color:var(--p1);}
+  canvas.chart{display:block;width:100%;border-radius:6px;}
+
+  /* TABLE */
+  .section-header{display:flex;align-items:center;gap:12px;margin-bottom:10px;}
+  .section-title{font-size:14px;font-weight:700;}
+  .section-count{font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--muted);background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:20px;padding:1px 8px;}
+  .section-actions{margin-left:auto;display:flex;gap:8px;}
+  .search{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:5px 12px;font-size:12px;color:var(--muted);transition:all .2s;cursor:text;font-family:inherit;}
+  .search:hover,.search:focus-within{border-color:var(--border-c);box-shadow:0 0 0 2px rgba(255,96,64,.08);color:var(--text);}
+  .search input{background:none;border:none;outline:none;font-size:12px;color:var(--text);font-family:inherit;width:130px;}
+  .search input::placeholder{color:var(--muted);}
+  .table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;}
+  table{width:100%;border-collapse:collapse;}
+  thead tr{border-bottom:1px solid var(--border);}
+  th{padding:9px 12px;font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);text-align:left;font-family:'JetBrains Mono',monospace;font-weight:400;}
+  td{padding:10px 12px;font-size:13px;border-bottom:1px solid rgba(255,255,255,.025);}
+  tbody tr{transition:background .15s;cursor:pointer;}
+  tbody tr:hover td{background:rgba(255,96,64,.04);}
+  tbody tr:hover td:first-child{box-shadow:inset 2px 0 0 var(--p0);}
+  tbody tr:last-child td{border-bottom:none;}
+  .cust-name{font-weight:600;}
+  .cust-name small{display:block;font-size:11px;color:var(--muted);font-weight:400;margin-top:1px;}
+  .muted{color:var(--muted);}
+  .mono{font-family:'JetBrains Mono',monospace;font-size:12px;}
+  .risk{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:.03em;}
+  .risk::before{content:'';width:5px;height:5px;border-radius:50%;}
+  .risk-high{background:rgba(224,64,32,.12);color:var(--pd1);border:1px solid rgba(224,64,32,.3);box-shadow:0 0 8px rgba(224,64,32,.2);animation:pulseRisk 2s infinite;}
+  .risk-high::before{background:var(--pd1);box-shadow:0 0 4px var(--pd1);}
+  @keyframes pulseRisk{0%,100%{box-shadow:0 0 8px rgba(224,64,32,.2)}50%{box-shadow:0 0 16px rgba(224,64,32,.4)}}
+  .risk-med{background:var(--pa10);color:var(--p0);border:1px solid rgba(255,96,64,.25);}
+  .risk-med::before{background:var(--p0);}
+  .risk-low{background:rgba(255,170,136,.1);color:var(--p2);border:1px solid rgba(255,170,136,.2);}
+  .risk-low::before{background:var(--p2);}
+  .visit-soon{color:var(--p2);font-family:'JetBrains Mono',monospace;font-size:12px;}
+  .visit-overdue{color:var(--pd1);font-family:'JetBrains Mono',monospace;font-size:12px;}
+  .visit-med{color:var(--p0);font-family:'JetBrains Mono',monospace;font-size:12px;}
+  .btn-outreach{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;border:1px solid var(--border-c);background:var(--pa10);color:var(--p1);transition:all .15s;position:relative;overflow:hidden;letter-spacing:.03em;}
+  .btn-outreach:hover{background:var(--pa20);border-color:var(--p0);box-shadow:var(--glow-sm);transform:translateY(-1px);}
+  .btn-outreach:active{transform:scale(.96);}
+
+  /* AI STRIP */
+  .ai-strip{margin-top:12px;background:linear-gradient(135deg,rgba(255,96,64,.07),rgba(184,46,16,.04));border:1px solid rgba(255,96,64,.18);border-radius:12px;padding:12px 16px;display:flex;align-items:center;gap:14px;position:relative;overflow:hidden;}
+  .ai-strip::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--p0),var(--p2),transparent);animation:scanTop 3s linear infinite;}
+  @keyframes scanTop{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
+  .ai-icon{font-size:20px;flex-shrink:0;animation:aiPulse 3s ease-in-out infinite;}
+  @keyframes aiPulse{0%,100%{filter:drop-shadow(0 0 4px var(--p0))}50%{filter:drop-shadow(0 0 12px var(--p1))}}
+  .ai-text h4{font-size:13px;font-weight:700;color:var(--p1);margin-bottom:2px;}
+  .ai-text p{font-size:11px;color:var(--muted);}
+  .ai-actions{margin-left:auto;display:flex;gap:8px;}
+  .btn-ai{padding:7px 14px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;border:1px solid var(--p0);background:linear-gradient(135deg,var(--pa20),var(--pa10));color:var(--p1);transition:all .2s;position:relative;overflow:hidden;box-shadow:var(--glow);animation:pulseBtn 2.5s ease-in-out infinite;}
+  .btn-ai:hover{box-shadow:var(--glow-xl);transform:translateY(-2px);}
+
+  /* TOAST */
+  .toast{position:fixed;bottom:22px;right:22px;z-index:9999;background:var(--surface2);border:1px solid var(--border-c);border-radius:12px;padding:11px 15px;display:flex;align-items:center;gap:10px;font-size:13px;font-weight:500;box-shadow:var(--glow),0 20px 60px rgba(0,0,0,.5);transform:translateY(80px);opacity:0;transition:all .4s cubic-bezier(.34,1.56,.64,1);}
+  .toast.show{transform:translateY(0);opacity:1;}
+  .toast-text strong{display:block;font-size:13px;color:var(--p1);}
+  .toast-text span{font-size:11px;color:var(--muted);}
+</style>
+</head>
+<body>
+<canvas id="canvas"></canvas>
+
+<div class="toast" id="toast">
+  <div style="font-size:18px" id="toast-icon">⚡</div>
+  <div class="toast-text"><strong id="toast-title">Done</strong><span id="toast-msg">Action complete</span></div>
+</div>
+
+<div class="app">
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="logo-wrap">
+      <div class="logo">Foresight</div>
+      <div class="logo-tag">// customer intelligence</div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">Main</div>
+      <div class="nav-item active" onclick="playClick()"><div class="nav-icon">◈</div>Dashboard</div>
+      <div class="nav-item" onclick="playClick()"><div class="nav-icon">◉</div>Customers<div class="nav-badge">847</div></div>
+      <div class="nav-item" onclick="playClick()"><div class="nav-icon">⚡</div>AI Outreach<div class="nav-badge dim">43</div></div>
+      <div class="nav-label" style="margin-top:12px">System</div>
+      <div class="nav-item" onclick="playClick()"><div class="nav-icon">⬡</div>Integrations</div>
+      <div class="nav-item" onclick="playClick()"><div class="nav-icon">◎</div>Settings</div>
+    </div>
+    <div class="sidebar-footer">
+      <div class="user-card" onclick="playClick()">
+        <div class="avatar">M</div>
+        <div><div class="user-name">Mike's Cafe</div><div class="user-role">Owner · Pro Plan</div></div>
+        <div class="status-dot"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main" id="mainScroll">
+    <div class="page-header">
+      <div>
+        <div class="page-title">Dashboard</div>
+        <div class="page-sub"><span class="live-dot"></span>Live · Last sync 2 min ago · Square connected</div>
+      </div>
+      <div class="header-actions">
+        <button class="btn btn-ghost magnetic" onclick="playClick()">📊 Export</button>
+        <button class="btn btn-primary magnetic" onclick="handleSync()">⟳ Sync Square</button>
+      </div>
+    </div>
+
+    <!-- STAT CARDS -->
+    <div class="stats">
+      <div class="stat-card" onclick="playHover()">
+        <div class="stat-label">Total Customers</div>
+        <div class="stat-value"><span class="counter" data-target="847">0</span></div>
+        <div class="stat-trend up">▲ +12 this week</div>
+        <div class="stat-bar"><div class="stat-bar-fill" style="width:0%" data-w="72%"></div></div>
+      </div>
+      <div class="stat-card" onclick="playHover()">
+        <div class="stat-label">High Churn Risk</div>
+        <div class="stat-value"><span class="counter" data-target="43">0</span></div>
+        <div class="stat-trend dn">▼ Needs attention</div>
+        <div class="stat-bar"><div class="stat-bar-fill" style="width:0%" data-w="18%"></div></div>
+      </div>
+      <div class="stat-card" onclick="playHover()">
+        <div class="stat-label">Total Revenue</div>
+        <div class="stat-value">$<span class="counter" data-target="84200" data-format="k">0</span></div>
+        <div class="stat-trend up">▲ All time</div>
+        <div class="stat-bar"><div class="stat-bar-fill" style="width:0%" data-w="88%"></div></div>
+      </div>
+      <div class="stat-card" onclick="playHover()">
+        <div class="stat-label">Avg Visits / Customer</div>
+        <div class="stat-value"><span class="counter" data-target="34" data-decimal>0</span></div>
+        <div class="stat-trend up">▲ +0.3 vs last mo</div>
+        <div class="stat-bar"><div class="stat-bar-fill" style="width:0%" data-w="55%"></div></div>
+      </div>
+    </div>
+
+    <!-- CHARTS -->
+    <div class="charts">
+      <!-- Line chart: Revenue -->
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <div class="chart-title">Revenue Over Time</div>
+            <div class="chart-sub">Last 6 months · $84.2k total</div>
+          </div>
+          <div class="chart-tabs">
+            <div class="chart-tab active" onclick="setLineRange(this,'6m')">6M</div>
+            <div class="chart-tab" onclick="setLineRange(this,'3m')">3M</div>
+            <div class="chart-tab" onclick="setLineRange(this,'1m')">1M</div>
+          </div>
+        </div>
+        <canvas class="chart" id="lineChart" height="130"></canvas>
+      </div>
+
+      <!-- Bar chart: Visit Frequency -->
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <div class="chart-title">Visit Frequency</div>
+            <div class="chart-sub">Customer distribution</div>
+          </div>
+          <div class="chart-tabs">
+            <div class="chart-tab active" onclick="setBarView(this,'freq')">Freq</div>
+            <div class="chart-tab" onclick="setBarView(this,'risk')">Risk</div>
+            <div class="chart-tab" onclick="setBarView(this,'spend')">Spend</div>
+          </div>
+        </div>
+        <canvas class="chart" id="barChart" height="130"></canvas>
+      </div>
+    </div>
+
+    <!-- TABLE -->
+    <div class="section-header">
+      <div class="section-title">Customers</div>
+      <div class="section-count">847 total</div>
+      <div class="section-actions">
+        <div class="search">🔍<input type="text" placeholder="Search customers..." onfocus="playHover()"></div>
+        <button class="btn btn-ghost magnetic" onclick="playClick()" style="font-size:11px">Filter ▾</button>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Customer</th><th>Last Visit</th><th>Spent</th><th>Visits</th><th>Churn Risk</th><th>Next Visit</th><th></th></tr></thead>
+        <tbody>
+          <tr onclick="playHover()"><td><div class="cust-name">Sarah Johnson<small>sarah@email.com</small></div></td><td class="muted">3 days ago</td><td class="mono">$1,240</td><td class="mono">18</td><td><span class="risk risk-low">Low</span></td><td><span class="visit-soon">in 4 days</span></td><td><button class="btn-outreach magnetic" onclick="handleOutreach(event,'Sarah Johnson')">⚡ Outreach</button></td></tr>
+          <tr onclick="playHover()"><td><div class="cust-name">Marcus Webb<small>m.webb@gmail.com</small></div></td><td class="muted" style="color:var(--pd1)">47 days ago</td><td class="mono">$380</td><td class="mono">5</td><td><span class="risk risk-high">High</span></td><td><span class="visit-overdue">overdue</span></td><td><button class="btn-outreach magnetic" onclick="handleOutreach(event,'Marcus Webb')">⚡ Outreach</button></td></tr>
+          <tr onclick="playHover()"><td><div class="cust-name">Priya Nair<small>priya.nair@work.co</small></div></td><td class="muted">12 days ago</td><td class="mono">$2,810</td><td class="mono">31</td><td><span class="risk risk-low">Low</span></td><td><span class="visit-soon">in 2 days</span></td><td><button class="btn-outreach magnetic" onclick="handleOutreach(event,'Priya Nair')">⚡ Outreach</button></td></tr>
+          <tr onclick="playHover()"><td><div class="cust-name">Devon Clarke<small>dclarke@icloud.com</small></div></td><td class="muted">22 days ago</td><td class="mono">$640</td><td class="mono">8</td><td><span class="risk risk-med">Medium</span></td><td><span class="visit-med">in 8 days</span></td><td><button class="btn-outreach magnetic" onclick="handleOutreach(event,'Devon Clarke')">⚡ Outreach</button></td></tr>
+          <tr onclick="playHover()"><td><div class="cust-name">Aisha Mensah<small>aisha.m@yahoo.com</small></div></td><td class="muted" style="color:var(--pd1)">61 days ago</td><td class="mono">$190</td><td class="mono">3</td><td><span class="risk risk-high">High</span></td><td><span class="visit-overdue">overdue</span></td><td><button class="btn-outreach magnetic" onclick="handleOutreach(event,'Aisha Mensah')">⚡ Outreach</button></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="ai-strip">
+      <div class="ai-icon">🤖</div>
+      <div class="ai-text"><h4>43 customers at high churn risk</h4><p>AI can generate personalized win-back messages — you review before sending</p></div>
+      <div class="ai-actions">
+        <button class="btn btn-ghost magnetic" onclick="playClick()" style="font-size:11px">View All</button>
+        <button class="btn-ai magnetic" onclick="handleBatchOutreach()">⚡ Generate All Outreach</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════
+// AUDIO
+// ══════════════════════════════════════════
+let audioCtx=null;
+function getAudio(){if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();return audioCtx;}
+function playTone(freq,type='sine',dur=0.08,vol=0.12,freqEnd=null){
+  try{const c=getAudio(),o=c.createOscillator(),g=c.createGain();
+  o.connect(g);g.connect(c.destination);o.type=type;
+  o.frequency.setValueAtTime(freq,c.currentTime);
+  if(freqEnd)o.frequency.exponentialRampToValueAtTime(freqEnd,c.currentTime+dur);
+  g.gain.setValueAtTime(0,c.currentTime);g.gain.linearRampToValueAtTime(vol,c.currentTime+0.008);
+  g.gain.exponentialRampToValueAtTime(0.0001,c.currentTime+dur);
+  o.start(c.currentTime);o.stop(c.currentTime+dur+0.01);}catch(e){}
+}
+function playClick(){playTone(880,'sine',0.08,0.1);}
+function playHover(){playTone(1200,'sine',0.04,0.03);}
+function playSuccess(){playTone(523,'sine',0.15,0.12);setTimeout(()=>playTone(659,'sine',0.15,0.12),100);setTimeout(()=>playTone(784,'sine',0.2,0.15),200);}
+function playAI(){playTone(300,'sine',0.4,0.08,900);setTimeout(()=>playTone(600,'triangle',0.3,0.05,1200),300);}
+function playSync(){playTone(400,'sine',0.3,0.1,800);}
+
+// ══════════════════════════════════════════
+// BACKGROUND PARTICLES
+// ══════════════════════════════════════════
+const bgCanvas=document.getElementById('canvas'),bCtx=bgCanvas.getContext('2d');
+let bW,bH,pts=[],mouse={x:-9999,y:-9999};
+const PCOLS=['#FF6040','#FF8060','#FFAA88','#E04020','#FFD0BB'];
+function bResize(){bW=bgCanvas.width=window.innerWidth;bH=bgCanvas.height=window.innerHeight;}
+function bSpawn(){pts=[];for(let i=0;i<70;i++)pts.push({x:Math.random()*bW,y:Math.random()*bH,vx:(Math.random()-.5)*.4,vy:(Math.random()-.5)*.4,r:Math.random()*1.5+.5,color:PCOLS[Math.floor(Math.random()*PCOLS.length)],alpha:Math.random()*.4+.15});}
+function bDraw(){
+  bCtx.clearRect(0,0,bW,bH);
+  for(let i=0;i<pts.length;i++)for(let j=i+1;j<pts.length;j++){const dx=pts[i].x-pts[j].x,dy=pts[i].y-pts[j].y,d=Math.sqrt(dx*dx+dy*dy);if(d<120){bCtx.beginPath();bCtx.moveTo(pts[i].x,pts[i].y);bCtx.lineTo(pts[j].x,pts[j].y);bCtx.strokeStyle=`rgba(255,96,64,${(1-d/120)*.09})`;bCtx.lineWidth=.5;bCtx.stroke();}}
+  for(const p of pts){const dx=p.x-mouse.x,dy=p.y-mouse.y,d=Math.sqrt(dx*dx+dy*dy);if(d<100){p.vx+=(dx/d)*.06;p.vy+=(dy/d)*.06;}p.x+=p.vx;p.y+=p.vy;const s=Math.sqrt(p.vx*p.vx+p.vy*p.vy);if(s>1.2){p.vx*=.97;p.vy*=.97;}if(p.x<0)p.vx+=.05;if(p.x>bW)p.vx-=.05;if(p.y<0)p.vy+=.05;if(p.y>bH)p.vy-=.05;bCtx.beginPath();bCtx.arc(p.x,p.y,p.r,0,Math.PI*2);bCtx.fillStyle=p.color;bCtx.globalAlpha=p.alpha;bCtx.shadowColor=p.color;bCtx.shadowBlur=6;bCtx.fill();bCtx.globalAlpha=1;bCtx.shadowBlur=0;}
+  requestAnimationFrame(bDraw);
+}
+window.addEventListener('resize',()=>{bResize();bSpawn();});
+window.addEventListener('mousemove',e=>{mouse.x=e.clientX;mouse.y=e.clientY;});
+bResize();bSpawn();bDraw();
+
+// ══════════════════════════════════════════
+// MAGNETIC + RIPPLE
+// ══════════════════════════════════════════
+function initMagnetic(){
+  document.querySelectorAll('.magnetic').forEach(el=>{
+    el.addEventListener('mousemove',e=>{const r=el.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;el.style.transform=`translate(${(e.clientX-cx)*.25}px,${(e.clientY-cy)*.25}px)`;el.style.setProperty('--mx',((e.clientX-r.left)/r.width*100).toFixed(0)+'%');el.style.setProperty('--my',((e.clientY-r.top)/r.height*100).toFixed(0)+'%');});
+    el.addEventListener('mouseleave',()=>{el.style.transform='translate(0,0)';el.style.transition='transform .4s cubic-bezier(.34,1.56,.64,1)';setTimeout(()=>el.style.transition='',400);});
+    el.addEventListener('mouseenter',()=>playHover());
+  });
+  document.querySelectorAll('.btn,.btn-outreach,.btn-ai').forEach(el=>{
+    el.addEventListener('click',e=>{const r=el.getBoundingClientRect(),rp=document.createElement('span');rp.className='ripple';const s=Math.max(r.width,r.height);rp.style.cssText=`width:${s}px;height:${s}px;left:${e.clientX-r.left-s/2}px;top:${e.clientY-r.top-s/2}px`;el.appendChild(rp);setTimeout(()=>rp.remove(),600);});
+  });
+}
+
+// ══════════════════════════════════════════
+// COUNTER ANIMATION
+// ══════════════════════════════════════════
+function animateCounter(el){
+  const target=parseInt(el.dataset.target),isDecimal=el.hasAttribute('data-decimal'),isK=el.dataset.format==='k';
+  const dur=2000,start=performance.now();
+  (function tick(now){
+    const p=Math.min((now-start)/dur,1),ease=1-Math.pow(1-p,3),val=Math.floor(ease*target);
+    if(isK)el.textContent=(val/1000).toFixed(1)+'k';
+    else if(isDecimal)el.textContent=(val/10).toFixed(1);
+    else el.textContent=val.toLocaleString();
+    if(p<1)requestAnimationFrame(tick);
+  })(start);
+}
+
+// ══════════════════════════════════════════
+// LINE CHART — Revenue over time
+// ══════════════════════════════════════════
+const lineDatasets = {
+  '6m': { labels:['Oct','Nov','Dec','Jan','Feb','Mar'], values:[9200,11400,15800,13100,17600,17100] },
+  '3m': { labels:['Jan','Feb','Mar'], values:[13100,17600,17100] },
+  '1m': { labels:['Wk1','Wk2','Wk3','Wk4'], values:[3800,4200,4600,4500] }
+};
+let lineRange='6m', lineProgress=0, lineAnimId=null;
+
+function drawLineChart(progress){
+  const cvs=document.getElementById('lineChart');
+  if(!cvs)return;
+  const dpr=window.devicePixelRatio||1;
+  const W=cvs.offsetWidth,H=cvs.offsetHeight||130;
+  cvs.width=W*dpr;cvs.height=H*dpr;
+  const c=cvs.getContext('2d');c.scale(dpr,dpr);
+
+  const {labels,values}=lineDatasets[lineRange];
+  const pad={top:14,right:16,bottom:28,left:44};
+  const cW=W-pad.left-pad.right,cH=H-pad.top-pad.bottom;
+  const max=Math.max(...values)*1.15,min=Math.min(...values)*0.85;
+  const toX=i=>pad.left+i*(cW/(labels.length-1));
+  const toY=v=>pad.top+cH-(((v-min)/(max-min))*cH);
+
+  // Grid lines (fade in with progress)
+  const gridAlpha=Math.min(progress*3,1)*0.15;
+  c.strokeStyle=`rgba(255,96,64,${gridAlpha})`;c.lineWidth=.5;
+  for(let i=0;i<=4;i++){const y=pad.top+i*(cH/4);c.beginPath();c.moveTo(pad.left,y);c.lineTo(W-pad.right,y);c.stroke();}
+
+  // Y-axis labels
+  const labelAlpha=Math.min(progress*3,1)*0.45;
+  c.fillStyle=`rgba(107,90,82,${labelAlpha})`;c.font=`9px 'JetBrains Mono',monospace`;c.textAlign='right';
+  for(let i=0;i<=4;i++){const v=min+(max-min)*(1-i/4);const y=pad.top+i*(cH/4);c.fillText('$'+(v/1000).toFixed(0)+'k',pad.left-6,y+3);}
+
+  // X-axis labels
+  c.textAlign='center';
+  labels.forEach((l,i)=>{c.fillText(l,toX(i),H-pad.bottom+14);});
+
+  // Clip to animated progress
+  const drawLen=progress*(labels.length-1);
+  const pts=[];
+  for(let i=0;i<labels.length;i++){
+    if(i<=Math.floor(drawLen)||i===0){pts.push({x:toX(i),y:toY(values[i])});}
+    else if(i===Math.ceil(drawLen)&&drawLen%1>0){
+      const frac=drawLen%1;
+      pts.push({x:toX(i-1)+(toX(i)-toX(i-1))*frac,y:toY(values[i-1])+(toY(values[i])-toY(values[i-1]))*frac});
+    }
+  }
+  if(pts.length<2)return;
+
+  // Gradient fill
+  const grad=c.createLinearGradient(0,pad.top,0,pad.top+cH);
+  grad.addColorStop(0,'rgba(255,96,64,0.25)');grad.addColorStop(1,'rgba(255,96,64,0.00)');
+
+  // Smooth curve via catmull-rom
+  function drawCurve(points,fill){
+    c.beginPath();c.moveTo(points[0].x,points[0].y);
+    for(let i=1;i<points.length-1;i++){const mx=(points[i].x+points[i+1].x)/2,my=(points[i].y+points[i+1].y)/2;c.quadraticCurveTo(points[i].x,points[i].y,mx,my);}
+    if(points.length>1){const last=points[points.length-1];c.lineTo(last.x,last.y);}
+    if(fill){c.lineTo(pts[pts.length-1].x,pad.top+cH);c.lineTo(pts[0].x,pad.top+cH);c.closePath();c.fillStyle=grad;c.fill();}
+  }
+
+  // Fill area
+  drawCurve(pts,true);
+
+  // Line stroke with glow
+  c.save();c.shadowColor='#FF6040';c.shadowBlur=8;
+  c.strokeStyle='#FF6040';c.lineWidth=2;c.lineJoin='round';c.lineCap='round';
+  drawCurve(pts,false);c.stroke();c.restore();
+
+  // Dots at each point
+  pts.forEach((p,i)=>{
+    if(i<pts.length-1||drawLen%1===0){
+      c.beginPath();c.arc(p.x,p.y,3,0,Math.PI*2);
+      c.fillStyle='#FF6040';c.save();c.shadowColor='#FF6040';c.shadowBlur=10;c.fill();c.restore();
+      c.beginPath();c.arc(p.x,p.y,1.5,0,Math.PI*2);c.fillStyle='#fff';c.fill();
+    }
+  });
+
+  // Animated end dot (pulsing)
+  const endPt=pts[pts.length-1];
+  const pulse=0.5+0.5*Math.sin(Date.now()*0.004);
+  c.beginPath();c.arc(endPt.x,endPt.y,4+pulse*3,0,Math.PI*2);
+  c.fillStyle=`rgba(255,96,64,${0.15+pulse*0.1})`;c.fill();
+}
+
+function animateLineChart(){
+  if(lineAnimId)cancelAnimationFrame(lineAnimId);
+  const dur=2000,start=performance.now();
+  function tick(now){
+    lineProgress=Math.min((now-start)/dur,1);
+    const ease=1-Math.pow(1-lineProgress,3);
+    drawLineChart(ease);
+    if(lineProgress<1)lineAnimId=requestAnimationFrame(tick);
+    else{lineAnimId=requestAnimationFrame(()=>drawLineChart(1));}// keep pulsing dot alive
+  }
+  lineAnimId=requestAnimationFrame(tick);
+}
+
+function setLineRange(el,range){
+  document.querySelectorAll('.chart-card:first-child .chart-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');lineRange=range;playClick();animateLineChart();
+}
+
+// ══════════════════════════════════════════
+// BAR CHART — Visit Frequency / Risk / Spend
+// ══════════════════════════════════════════
+const barDatasets = {
+  freq:  { labels:['1–2x','3–5x','6–10x','11–20x','20x+'], values:[185,290,210,112,50], color:'#FF6040' },
+  risk:  { labels:['No Risk','Low','Medium','High','Critical'], values:[320,240,155,93,39], color:'#E04020' },
+  spend: { labels:['<$50','$50–200','$200–500','$500–1k','$1k+'], values:[98,214,280,175,80], color:'#FF8060' }
+};
+let barView='freq', barProgress=0, barAnimId=null;
+
+function drawBarChart(progress){
+  const cvs=document.getElementById('barChart');
+  if(!cvs)return;
+  const dpr=window.devicePixelRatio||1;
+  const W=cvs.offsetWidth,H=cvs.offsetHeight||130;
+  cvs.width=W*dpr;cvs.height=H*dpr;
+  const c=cvs.getContext('2d');c.scale(dpr,dpr);
+
+  const {labels,values,color}=barDatasets[barView];
+  const pad={top:12,right:12,bottom:28,left:36};
+  const cW=W-pad.left-pad.right,cH=H-pad.top-pad.bottom;
+  const max=Math.max(...values)*1.15;
+  const bW=cW/labels.length,gap=bW*0.25,bWw=bW-gap;
+
+  // Grid lines
+  const gAlpha=Math.min(progress*3,1)*0.15;
+  c.strokeStyle=`rgba(255,96,64,${gAlpha})`;c.lineWidth=.5;
+  for(let i=0;i<=4;i++){const y=pad.top+i*(cH/4);c.beginPath();c.moveTo(pad.left,y);c.lineTo(W-pad.right,y);c.stroke();}
+
+  // Y labels
+  const lAlpha=Math.min(progress*3,1)*0.45;
+  c.fillStyle=`rgba(107,90,82,${lAlpha})`;c.font=`9px 'JetBrains Mono',monospace`;c.textAlign='right';
+  for(let i=0;i<=4;i++){const v=max*(1-i/4);c.fillText(Math.round(v),pad.left-5,pad.top+i*(cH/4)+3);}
+
+  labels.forEach((label,i)=>{
+    // Stagger: each bar starts slightly later
+    const stagger=i/labels.length*0.35;
+    const barP=Math.max(0,Math.min((progress-stagger)/(1-stagger),1));
+    const ease=1-Math.pow(1-barP,3);
+    const bH2=((values[i]/max)*cH)*ease;
+    const x=pad.left+i*bW+gap/2;
+    const y=pad.top+cH-bH2;
+
+    // Bar gradient
+    const grad=c.createLinearGradient(x,y,x,pad.top+cH);
+    grad.addColorStop(0,color);
+    grad.addColorStop(1,color+'22');
+    c.fillStyle=grad;
+    // Rounded top
+    const r=3;
+    c.beginPath();
+    if(bH2>r*2){
+      c.moveTo(x+r,y);c.lineTo(x+bWw-r,y);c.quadraticCurveTo(x+bWw,y,x+bWw,y+r);
+      c.lineTo(x+bWw,pad.top+cH);c.lineTo(x,pad.top+cH);c.lineTo(x,y+r);
+      c.quadraticCurveTo(x,y,x+r,y);c.closePath();
+    }else{c.rect(x,y,bWw,bH2);}
+    c.save();c.shadowColor=color;c.shadowBlur=barP*12;c.fill();c.restore();
+
+    // Top glow line
+    if(bH2>4){
+      c.beginPath();c.moveTo(x+r,y+1);c.lineTo(x+bWw-r,y+1);
+      c.strokeStyle=`rgba(255,255,255,${barP*0.35})`;c.lineWidth=1;c.stroke();
+    }
+
+    // Value label above bar
+    if(barP>0.6){
+      const vAlpha=(barP-0.6)/0.4;
+      c.fillStyle=`rgba(255,170,136,${vAlpha*0.9})`;
+      c.font=`bold 9px 'JetBrains Mono',monospace`;c.textAlign='center';
+      c.fillText(values[i],x+bWw/2,y-4);
+    }
+
+    // X label
+    const xLabelAlpha=Math.min(progress*2,1)*0.5;
+    c.fillStyle=`rgba(107,90,82,${xLabelAlpha})`;
+    c.font=`9px 'JetBrains Mono',monospace`;c.textAlign='center';
+    c.fillText(label,x+bWw/2,H-pad.bottom+14);
+  });
+}
+
+function animateBarChart(){
+  if(barAnimId)cancelAnimationFrame(barAnimId);
+  const dur=1800,start=performance.now();
+  function tick(now){
+    barProgress=Math.min((now-start)/dur,1);
+    const ease=1-Math.pow(1-barProgress,3);
+    drawBarChart(ease);
+    if(barProgress<1)barAnimId=requestAnimationFrame(tick);
+  }
+  barAnimId=requestAnimationFrame(tick);
+}
+
+function setBarView(el,view){
+  document.querySelectorAll('.chart-card:last-child .chart-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');barView=view;playClick();animateBarChart();
+}
+
+// ══════════════════════════════════════════
+// FULL INIT — runs on load AND tab focus
+// ══════════════════════════════════════════
+function runAllAnimations(){
+  // Counters
+  document.querySelectorAll('.counter').forEach((el,i)=>{
+    el.textContent='0';
+    setTimeout(()=>animateCounter(el),300+i*120);
+  });
+  // Stat bars
+  document.querySelectorAll('.stat-bar-fill').forEach(el=>{
+    el.style.width='0%';
+    setTimeout(()=>{el.style.width=el.dataset.w;},400);
+  });
+  // Charts
+  setTimeout(()=>animateLineChart(),300);
+  setTimeout(()=>animateBarChart(),500);
+  // Welcome tone
+  setTimeout(()=>playTone(523,'sine',.2,.05),400);
+  setTimeout(()=>playTone(659,'sine',.2,.04),550);
+}
+
+// Re-trigger on tab focus (Page Visibility API)
+document.addEventListener('visibilitychange',()=>{
+  if(!document.hidden){
+    setTimeout(runAllAnimations, 150);
+  }
+});
+
+// Resize charts on window resize
+window.addEventListener('resize',()=>{
+  drawLineChart(1);
+  drawBarChart(1);
+});
+
+// ══════════════════════════════════════════
+// TOAST + INTERACTIONS
+// ══════════════════════════════════════════
+function showToast(icon,title,msg){
+  const t=document.getElementById('toast');
+  document.getElementById('toast-icon').textContent=icon;
+  document.getElementById('toast-title').textContent=title;
+  document.getElementById('toast-msg').textContent=msg;
+  t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3500);
+}
+function handleSync(){playSync();showToast('⟳','Syncing Square...','Fetching latest customer data');setTimeout(()=>{playSuccess();showToast('✓','Sync Complete','847 customers updated · 3 new');},2000);}
+function handleOutreach(e,name){e.stopPropagation();playAI();showToast('🤖','Generating Outreach',`Analyzing ${name}'s purchase history...`);setTimeout(()=>{playSuccess();showToast('✓','Draft Ready',`Review your message to ${name.split(' ')[0]}`);},1800);}
+function handleBatchOutreach(){playAI();showToast('🤖','AI Processing','Generating 43 personalized messages...');setTimeout(()=>{playSuccess();showToast('✓','43 Drafts Ready','Review before sending · 0 auto-sent');},2200);}
+
+// ══════════════════════════════════════════
+// BOOT
+// ══════════════════════════════════════════
+window.addEventListener('load',()=>{
+  initMagnetic();
+  // Wait for layout to settle so canvas sizes are correct
+  setTimeout(runAllAnimations,100);
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,1080 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Foresight — Eye Candy Mockup</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap');
+
+  :root {
+    --bg: #050508;
+    --surface: #0c0c16;
+    --surface2: #12121f;
+    --border: rgba(255,255,255,0.06);
+    --cyan: #00f5ff;
+    --pink: #ff2d78;
+    --purple: #a855f7;
+    --green: #22d3ee;
+    --yellow: #fbbf24;
+    --text: #f1f5f9;
+    --muted: #475569;
+    --glow-cyan: 0 0 6px #00f5ff, 0 0 20px rgba(0,245,255,0.4), 0 0 60px rgba(0,245,255,0.15);
+    --glow-pink: 0 0 6px #ff2d78, 0 0 20px rgba(255,45,120,0.4), 0 0 60px rgba(255,45,120,0.15);
+    --glow-purple: 0 0 6px #a855f7, 0 0 20px rgba(168,85,247,0.4);
+    --glow-green: 0 0 6px #22d3ee, 0 0 20px rgba(34,211,238,0.4);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', system-ui, sans-serif;
+    overflow: hidden;
+    height: 100vh;
+  }
+
+  /* Scanline overlay */
+  body::before {
+    content: '';
+    position: fixed; inset: 0; z-index: 1000; pointer-events: none;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,0.03) 2px,
+      rgba(0,0,0,0.03) 4px
+    );
+  }
+
+  /* Particle canvas */
+  #canvas {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  }
+
+  /* App layout */
+  .app {
+    position: relative; z-index: 1;
+    display: flex; height: 100vh; overflow: hidden;
+  }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    width: 224px; min-width: 224px;
+    background: linear-gradient(180deg, rgba(12,12,22,0.98) 0%, rgba(8,8,16,0.98) 100%);
+    border-right: 1px solid var(--border);
+    display: flex; flex-direction: column;
+    padding: 20px 0;
+    backdrop-filter: blur(20px);
+  }
+
+  /* Glitch logo */
+  .logo-wrap { padding: 0 18px 24px; }
+  .logo {
+    font-size: 22px; font-weight: 900; letter-spacing: -1px;
+    position: relative; display: inline-block;
+    background: linear-gradient(90deg, var(--cyan), var(--pink));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    cursor: default;
+  }
+  .logo::before, .logo::after {
+    content: 'Foresight';
+    position: absolute; top: 0; left: 0;
+    background: linear-gradient(90deg, var(--cyan), var(--pink));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .logo::before {
+    animation: glitch1 4s infinite;
+    clip-path: polygon(0 30%, 100% 30%, 100% 50%, 0 50%);
+    transform: translate(-2px, 0);
+    filter: hue-rotate(180deg);
+  }
+  .logo::after {
+    animation: glitch2 4s infinite;
+    clip-path: polygon(0 60%, 100% 60%, 100% 75%, 0 75%);
+    transform: translate(2px, 0);
+  }
+  @keyframes glitch1 {
+    0%,90%,100% { opacity: 0; transform: translate(0,0); }
+    91% { opacity: 1; transform: translate(-3px, 1px); }
+    93% { opacity: 1; transform: translate(3px, -1px); }
+    95% { opacity: 0; }
+  }
+  @keyframes glitch2 {
+    0%,92%,100% { opacity: 0; transform: translate(0,0); }
+    93% { opacity: 1; transform: translate(3px, 1px); }
+    95% { opacity: 1; transform: translate(-2px, 0); }
+    97% { opacity: 0; }
+  }
+
+  .logo-tag {
+    font-size: 9px; font-family: 'JetBrains Mono', monospace;
+    color: var(--cyan); opacity: 0.6; letter-spacing: 0.15em;
+    text-transform: uppercase; margin-top: 2px;
+  }
+
+  /* Nav items */
+  .nav-section { flex: 1; }
+  .nav-label {
+    font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--muted); padding: 4px 18px 6px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .nav-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 18px; font-size: 13px; font-weight: 500;
+    color: var(--muted); cursor: pointer;
+    position: relative; overflow: hidden;
+    transition: color 0.2s;
+    user-select: none;
+  }
+  .nav-item::before {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(90deg, rgba(0,245,255,0.06), transparent);
+    opacity: 0; transition: opacity 0.2s;
+  }
+  .nav-item::after {
+    content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+    width: 2px;
+    background: linear-gradient(180deg, var(--cyan), var(--pink));
+    box-shadow: var(--glow-cyan);
+    transform: scaleY(0); transform-origin: center;
+    transition: transform 0.2s;
+  }
+  .nav-item.active {
+    color: var(--cyan);
+  }
+  .nav-item.active::before { opacity: 1; }
+  .nav-item.active::after { transform: scaleY(1); }
+  .nav-item:hover:not(.active) { color: #94a3b8; }
+  .nav-item:hover::before { opacity: 0.5; }
+
+  .nav-icon {
+    width: 16px; height: 16px; opacity: 0.7;
+    font-size: 14px; display: flex; align-items: center; justify-content: center;
+  }
+  .nav-item.active .nav-icon { opacity: 1; filter: drop-shadow(0 0 4px var(--cyan)); }
+
+  /* Alert badge */
+  .nav-badge {
+    margin-left: auto; background: var(--pink);
+    color: #fff; font-size: 10px; font-weight: 700;
+    border-radius: 10px; padding: 1px 6px;
+    box-shadow: var(--glow-pink);
+    animation: pulseBadge 2s ease-in-out infinite;
+  }
+  @keyframes pulseBadge {
+    0%,100% { box-shadow: var(--glow-pink); }
+    50% { box-shadow: 0 0 12px #ff2d78, 0 0 30px rgba(255,45,120,0.6); }
+  }
+
+  /* Sidebar bottom */
+  .sidebar-footer { padding: 14px 14px 0; }
+  .user-card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    border-radius: 10px; padding: 10px 12px;
+    display: flex; align-items: center; gap: 10px;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .user-card:hover {
+    border-color: rgba(0,245,255,0.2);
+    background: rgba(0,245,255,0.04);
+  }
+  .avatar {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--cyan), var(--pink));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 800; color: #000;
+    box-shadow: var(--glow-cyan); flex-shrink: 0;
+  }
+  .user-name { font-size: 12px; font-weight: 600; }
+  .user-role { font-size: 10px; color: var(--muted); }
+  .status-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: #22c55e; margin-left: auto;
+    box-shadow: 0 0 6px #22c55e;
+    animation: blink 2s ease-in-out infinite;
+  }
+  @keyframes blink {
+    0%,100% { opacity: 1; } 50% { opacity: 0.4; }
+  }
+
+  /* ── MAIN ── */
+  .main {
+    flex: 1; overflow-y: auto; padding: 24px 28px;
+    background: transparent;
+  }
+  .main::-webkit-scrollbar { width: 4px; }
+  .main::-webkit-scrollbar-track { background: transparent; }
+  .main::-webkit-scrollbar-thumb { background: rgba(0,245,255,0.2); border-radius: 2px; }
+
+  /* Header */
+  .page-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 20px;
+  }
+  .page-title { font-size: 24px; font-weight: 800; letter-spacing: -0.5px; }
+  .page-sub {
+    font-size: 12px; color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+    margin-top: 2px;
+  }
+  .live-dot {
+    display: inline-block; width: 6px; height: 6px;
+    border-radius: 50%; background: var(--green);
+    box-shadow: var(--glow-green);
+    animation: blink 2s ease-in-out infinite;
+    margin-right: 5px;
+  }
+
+  /* Header actions */
+  .header-actions { display: flex; gap: 10px; align-items: center; }
+
+  /* ── BUTTONS ── */
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600;
+    cursor: pointer; border: none; outline: none;
+    position: relative; overflow: hidden;
+    transition: transform 0.15s, box-shadow 0.15s;
+    user-select: none;
+  }
+  .btn::after {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(circle at var(--mx,50%) var(--my,50%), rgba(255,255,255,0.15), transparent 60%);
+    opacity: 0; transition: opacity 0.2s;
+  }
+  .btn:hover::after { opacity: 1; }
+  .btn:active { transform: scale(0.97); }
+
+  /* Ripple */
+  .ripple {
+    position: absolute; border-radius: 50%;
+    transform: scale(0); animation: rippleAnim 0.5s linear;
+    background: rgba(255,255,255,0.3); pointer-events: none;
+  }
+  @keyframes rippleAnim {
+    to { transform: scale(4); opacity: 0; }
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, rgba(0,245,255,0.15), rgba(255,45,120,0.1));
+    border: 1px solid var(--cyan);
+    color: var(--cyan);
+    box-shadow: var(--glow-cyan);
+    animation: pulseGlowCyan 2.5s ease-in-out infinite;
+  }
+  .btn-primary:hover {
+    box-shadow: 0 0 10px var(--cyan), 0 0 40px rgba(0,245,255,0.5), 0 0 80px rgba(0,245,255,0.2);
+    transform: translateY(-2px);
+  }
+  @keyframes pulseGlowCyan {
+    0%,100% { box-shadow: var(--glow-cyan); }
+    50% { box-shadow: 0 0 10px var(--cyan), 0 0 35px rgba(0,245,255,0.5), 0 0 70px rgba(0,245,255,0.2); }
+  }
+
+  .btn-danger {
+    background: linear-gradient(135deg, rgba(255,45,120,0.15), rgba(255,45,120,0.05));
+    border: 1px solid var(--pink);
+    color: var(--pink);
+    box-shadow: var(--glow-pink);
+    animation: pulseGlowPink 2.5s ease-in-out infinite;
+    font-size: 11px; padding: 5px 12px;
+  }
+  .btn-danger:hover {
+    box-shadow: 0 0 10px var(--pink), 0 0 40px rgba(255,45,120,0.5);
+    transform: translateY(-2px);
+  }
+  @keyframes pulseGlowPink {
+    0%,100% { box-shadow: var(--glow-pink); }
+    50% { box-shadow: 0 0 10px var(--pink), 0 0 35px rgba(255,45,120,0.5); }
+  }
+
+  .btn-ghost {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 12px; padding: 7px 12px;
+    transition: all 0.2s;
+  }
+  .btn-ghost:hover {
+    border-color: rgba(0,245,255,0.3);
+    color: var(--cyan);
+    background: rgba(0,245,255,0.05);
+    box-shadow: 0 0 8px rgba(0,245,255,0.2);
+  }
+
+  /* ── STAT CARDS ── */
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
+
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px; padding: 18px 20px;
+    position: relative; overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.25s, border-color 0.25s, box-shadow 0.25s;
+  }
+  .stat-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+  }
+  .stat-card::after {
+    content: ''; position: absolute; inset: 0; border-radius: 14px;
+    opacity: 0; transition: opacity 0.3s;
+  }
+  .stat-card:hover { transform: translateY(-4px); }
+  .stat-card:hover::after { opacity: 1; }
+
+  .stat-card.c::before { background: linear-gradient(90deg, var(--cyan), transparent 60%); }
+  .stat-card.c:hover { border-color: rgba(0,245,255,0.3); box-shadow: 0 8px 30px rgba(0,245,255,0.1), 0 0 0 1px rgba(0,245,255,0.1); }
+  .stat-card.c::after { background: radial-gradient(ellipse at 0 0, rgba(0,245,255,0.06), transparent 60%); }
+
+  .stat-card.p::before { background: linear-gradient(90deg, var(--pink), transparent 60%); }
+  .stat-card.p:hover { border-color: rgba(255,45,120,0.3); box-shadow: 0 8px 30px rgba(255,45,120,0.1), 0 0 0 1px rgba(255,45,120,0.1); }
+  .stat-card.p::after { background: radial-gradient(ellipse at 0 0, rgba(255,45,120,0.06), transparent 60%); }
+
+  .stat-card.v::before { background: linear-gradient(90deg, var(--purple), transparent 60%); }
+  .stat-card.v:hover { border-color: rgba(168,85,247,0.3); box-shadow: 0 8px 30px rgba(168,85,247,0.1); }
+  .stat-card.v::after { background: radial-gradient(ellipse at 0 0, rgba(168,85,247,0.06), transparent 60%); }
+
+  .stat-card.g::before { background: linear-gradient(90deg, var(--green), transparent 60%); }
+  .stat-card.g:hover { border-color: rgba(34,211,238,0.3); box-shadow: 0 8px 30px rgba(34,211,238,0.1); }
+  .stat-card.g::after { background: radial-gradient(ellipse at 0 0, rgba(34,211,238,0.06), transparent 60%); }
+
+  .stat-label {
+    font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em;
+    color: var(--muted); font-family: 'JetBrains Mono', monospace; margin-bottom: 8px;
+  }
+  .stat-value {
+    font-size: 30px; font-weight: 900; letter-spacing: -1px;
+    font-variant-numeric: tabular-nums;
+  }
+  .stat-value.c { color: var(--cyan); text-shadow: 0 0 20px rgba(0,245,255,0.5); }
+  .stat-value.p { color: var(--pink); text-shadow: 0 0 20px rgba(255,45,120,0.5); }
+  .stat-value.v { color: var(--purple); text-shadow: 0 0 20px rgba(168,85,247,0.5); }
+  .stat-value.g { color: var(--green); text-shadow: 0 0 20px rgba(34,211,238,0.5); }
+
+  .stat-sub { font-size: 11px; color: var(--muted); margin-top: 4px; }
+  .stat-trend {
+    font-size: 10px; font-family: 'JetBrains Mono', monospace;
+    margin-top: 6px;
+  }
+  .stat-trend.up { color: #22c55e; }
+  .stat-trend.down { color: var(--pink); }
+
+  /* Progress bar on cards */
+  .stat-bar { height: 2px; background: rgba(255,255,255,0.06); border-radius: 1px; margin-top: 10px; overflow: hidden; }
+  .stat-bar-fill { height: 100%; border-radius: 1px; transition: width 1.5s cubic-bezier(0.4,0,0.2,1); }
+  .stat-bar-fill.c { background: linear-gradient(90deg, var(--cyan), rgba(0,245,255,0.3)); box-shadow: 0 0 8px var(--cyan); }
+  .stat-bar-fill.p { background: linear-gradient(90deg, var(--pink), rgba(255,45,120,0.3)); box-shadow: 0 0 8px var(--pink); }
+  .stat-bar-fill.v { background: linear-gradient(90deg, var(--purple), rgba(168,85,247,0.3)); }
+  .stat-bar-fill.g { background: linear-gradient(90deg, var(--green), rgba(34,211,238,0.3)); }
+
+  /* ── TABLE SECTION ── */
+  .section-header {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 12px;
+  }
+  .section-title { font-size: 15px; font-weight: 700; }
+  .section-count {
+    font-size: 11px; font-family: 'JetBrains Mono', monospace;
+    color: var(--muted); background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border); border-radius: 20px; padding: 1px 8px;
+  }
+  .section-actions { margin-left: auto; display: flex; gap: 8px; }
+
+  /* Search */
+  .search {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; padding: 6px 12px;
+    font-size: 12px; color: var(--muted);
+    transition: all 0.2s; cursor: text;
+    font-family: inherit;
+  }
+  .search:hover, .search:focus-within {
+    border-color: rgba(0,245,255,0.3);
+    box-shadow: 0 0 0 2px rgba(0,245,255,0.08);
+    color: var(--text);
+  }
+  .search input {
+    background: none; border: none; outline: none;
+    font-size: 12px; color: var(--text); font-family: inherit;
+    width: 140px;
+  }
+  .search input::placeholder { color: var(--muted); }
+
+  /* Table */
+  .table-wrap {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; overflow: hidden;
+  }
+  table { width: 100%; border-collapse: collapse; }
+  thead tr { border-bottom: 1px solid var(--border); }
+  th {
+    padding: 10px 14px; font-size: 10px; text-transform: uppercase;
+    letter-spacing: 0.1em; color: var(--muted); text-align: left;
+    font-family: 'JetBrains Mono', monospace; font-weight: 400;
+  }
+  td { padding: 12px 14px; font-size: 13px; border-bottom: 1px solid rgba(255,255,255,0.025); }
+  tbody tr {
+    transition: background 0.15s; cursor: pointer; position: relative;
+  }
+  tbody tr:hover td { background: rgba(0,245,255,0.03); }
+  tbody tr:hover td:first-child { box-shadow: inset 2px 0 0 var(--cyan); }
+  tbody tr:last-child td { border-bottom: none; }
+
+  .cust-name { font-weight: 600; }
+  .cust-name small { display: block; font-size: 11px; color: var(--muted); font-weight: 400; margin-top: 1px; }
+  .muted { color: var(--muted); }
+  .mono { font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+
+  /* Risk badges */
+  .risk {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700;
+    letter-spacing: 0.03em;
+  }
+  .risk::before { content: ''; width: 5px; height: 5px; border-radius: 50%; }
+  .risk-high {
+    background: rgba(255,45,120,0.12); color: var(--pink);
+    border: 1px solid rgba(255,45,120,0.3);
+    box-shadow: 0 0 8px rgba(255,45,120,0.2);
+    animation: pulseRisk 2s infinite;
+  }
+  .risk-high::before { background: var(--pink); box-shadow: 0 0 4px var(--pink); }
+  @keyframes pulseRisk {
+    0%,100% { box-shadow: 0 0 8px rgba(255,45,120,0.2); }
+    50% { box-shadow: 0 0 16px rgba(255,45,120,0.4); }
+  }
+  .risk-med {
+    background: rgba(251,191,36,0.1); color: var(--yellow);
+    border: 1px solid rgba(251,191,36,0.25);
+  }
+  .risk-med::before { background: var(--yellow); }
+  .risk-low {
+    background: rgba(34,211,238,0.1); color: var(--green);
+    border: 1px solid rgba(34,211,238,0.25);
+  }
+  .risk-low::before { background: var(--green); box-shadow: 0 0 4px var(--green); }
+
+  /* Next visit */
+  .visit-soon { color: var(--green); font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+  .visit-overdue { color: var(--pink); font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+  .visit-med { color: var(--yellow); font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+
+  /* Outreach btn */
+  .btn-outreach {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 5px 10px; border-radius: 6px; font-size: 11px; font-weight: 700;
+    cursor: pointer; border: 1px solid rgba(0,245,255,0.3);
+    background: rgba(0,245,255,0.08); color: var(--cyan);
+    transition: all 0.15s; position: relative; overflow: hidden;
+    letter-spacing: 0.03em;
+  }
+  .btn-outreach:hover {
+    background: rgba(0,245,255,0.15);
+    border-color: var(--cyan);
+    box-shadow: 0 0 12px rgba(0,245,255,0.3), 0 0 30px rgba(0,245,255,0.1);
+    transform: translateY(-1px);
+  }
+  .btn-outreach:active { transform: scale(0.96); }
+
+  /* AI Outreach modal-like strip */
+  .ai-strip {
+    margin-top: 14px;
+    background: linear-gradient(135deg, rgba(168,85,247,0.08), rgba(0,245,255,0.05));
+    border: 1px solid rgba(168,85,247,0.25);
+    border-radius: 12px; padding: 14px 18px;
+    display: flex; align-items: center; gap: 14px;
+    position: relative; overflow: hidden;
+  }
+  .ai-strip::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--purple), var(--cyan), transparent);
+    animation: scanTop 3s linear infinite;
+  }
+  @keyframes scanTop {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+  }
+  .ai-icon {
+    font-size: 22px;
+    animation: rotateAI 4s linear infinite;
+    flex-shrink: 0;
+  }
+  @keyframes rotateAI {
+    0%,100% { filter: drop-shadow(0 0 4px var(--purple)); }
+    50% { filter: drop-shadow(0 0 12px var(--cyan)); }
+  }
+  .ai-text h4 { font-size: 13px; font-weight: 700; color: var(--purple); margin-bottom: 2px; }
+  .ai-text p { font-size: 11px; color: var(--muted); }
+  .ai-actions { margin-left: auto; display: flex; gap: 8px; }
+
+  .btn-ai {
+    padding: 7px 14px; border-radius: 8px; font-size: 12px; font-weight: 700;
+    cursor: pointer; border: 1px solid var(--purple);
+    background: linear-gradient(135deg, rgba(168,85,247,0.2), rgba(168,85,247,0.08));
+    color: var(--purple); transition: all 0.2s; position: relative; overflow: hidden;
+    box-shadow: 0 0 10px rgba(168,85,247,0.2);
+    animation: pulseAI 2.5s ease-in-out infinite;
+  }
+  .btn-ai:hover {
+    box-shadow: 0 0 20px rgba(168,85,247,0.5), 0 0 40px rgba(168,85,247,0.2);
+    transform: translateY(-2px);
+  }
+  @keyframes pulseAI {
+    0%,100% { box-shadow: 0 0 10px rgba(168,85,247,0.2); }
+    50% { box-shadow: 0 0 20px rgba(168,85,247,0.45), 0 0 40px rgba(168,85,247,0.15); }
+  }
+
+  /* Tooltip on hover for nav */
+  .nav-item[title]:hover::before { content: none; }
+
+  /* Shimmer loading */
+  @keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+
+  /* Number counter */
+  .counter { display: inline-block; }
+
+  /* Score bar in table */
+  .score-wrap { display: flex; align-items: center; gap: 8px; }
+  .score-bar { flex: 1; max-width: 60px; height: 3px; background: rgba(255,255,255,0.06); border-radius: 2px; overflow: hidden; }
+  .score-fill { height: 100%; border-radius: 2px; transition: width 1.5s cubic-bezier(0.4,0,0.2,1); }
+
+  /* Toast notification */
+  .toast {
+    position: fixed; bottom: 24px; right: 24px; z-index: 9999;
+    background: var(--surface2); border: 1px solid rgba(0,245,255,0.3);
+    border-radius: 12px; padding: 12px 16px;
+    display: flex; align-items: center; gap: 10px;
+    font-size: 13px; font-weight: 500;
+    box-shadow: var(--glow-cyan), 0 20px 60px rgba(0,0,0,0.5);
+    transform: translateY(80px); opacity: 0;
+    transition: all 0.4s cubic-bezier(0.34,1.56,0.64,1);
+    max-width: 320px;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast-icon { font-size: 18px; }
+  .toast-text strong { display: block; font-size: 13px; color: var(--cyan); }
+  .toast-text span { font-size: 11px; color: var(--muted); }
+</style>
+</head>
+<body>
+
+<!-- Particle canvas -->
+<canvas id="canvas"></canvas>
+
+<!-- Toast -->
+<div class="toast" id="toast">
+  <div class="toast-icon">⚡</div>
+  <div class="toast-text">
+    <strong id="toast-title">Square Synced</strong>
+    <span id="toast-msg">847 customers updated</span>
+  </div>
+</div>
+
+<!-- App -->
+<div class="app">
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="logo-wrap">
+      <div class="logo">Foresight</div>
+      <div class="logo-tag">// customer intelligence</div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">Main</div>
+      <div class="nav-item active" onclick="playClick()">
+        <div class="nav-icon">◈</div> Dashboard
+      </div>
+      <div class="nav-item" onclick="playClick()">
+        <div class="nav-icon">◉</div> Customers
+        <div class="nav-badge">847</div>
+      </div>
+      <div class="nav-item" onclick="playClick()">
+        <div class="nav-icon">⚡</div> AI Outreach
+        <div class="nav-badge" style="background:var(--purple);box-shadow:var(--glow-purple)">43</div>
+      </div>
+      <div class="nav-label" style="margin-top:12px">System</div>
+      <div class="nav-item" onclick="playClick()">
+        <div class="nav-icon">⬡</div> Integrations
+      </div>
+      <div class="nav-item" onclick="playClick()">
+        <div class="nav-icon">◎</div> Settings
+      </div>
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="user-card" onclick="playClick()">
+        <div class="avatar">M</div>
+        <div>
+          <div class="user-name">Mike's Cafe</div>
+          <div class="user-role">Owner · Pro Plan</div>
+        </div>
+        <div class="status-dot"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main content -->
+  <div class="main">
+    <!-- Header -->
+    <div class="page-header">
+      <div>
+        <div class="page-title">Dashboard</div>
+        <div class="page-sub">
+          <span class="live-dot"></span>
+          Live · Last sync 2 min ago · Square connected
+        </div>
+      </div>
+      <div class="header-actions">
+        <button class="btn btn-ghost magnetic" onclick="playClick()">📊 Export</button>
+        <button class="btn btn-primary magnetic" onclick="handleSync()">⟳ Sync Square</button>
+      </div>
+    </div>
+
+    <!-- Stat cards -->
+    <div class="stats">
+      <div class="stat-card c" onclick="playHover()">
+        <div class="stat-label">Total Customers</div>
+        <div class="stat-value c"><span class="counter" data-target="847">0</span></div>
+        <div class="stat-trend up">▲ +12 this week</div>
+        <div class="stat-bar"><div class="stat-bar-fill c" style="width:0%" data-w="72%"></div></div>
+      </div>
+      <div class="stat-card p" onclick="playHover()">
+        <div class="stat-label">High Churn Risk</div>
+        <div class="stat-value p"><span class="counter" data-target="43">0</span></div>
+        <div class="stat-trend down">▼ Needs attention</div>
+        <div class="stat-bar"><div class="stat-bar-fill p" style="width:0%" data-w="18%"></div></div>
+      </div>
+      <div class="stat-card v" onclick="playHover()">
+        <div class="stat-label">Total Revenue</div>
+        <div class="stat-value v">$<span class="counter" data-target="84200" data-format="k">0</span></div>
+        <div class="stat-trend up">▲ All time</div>
+        <div class="stat-bar"><div class="stat-bar-fill v" style="width:0%" data-w="88%"></div></div>
+      </div>
+      <div class="stat-card g" onclick="playHover()">
+        <div class="stat-label">Avg Visits / Customer</div>
+        <div class="stat-value g"><span class="counter" data-target="34" data-decimal>0</span></div>
+        <div class="stat-trend up">▲ +0.3 vs last mo</div>
+        <div class="stat-bar"><div class="stat-bar-fill g" style="width:0%" data-w="55%"></div></div>
+      </div>
+    </div>
+
+    <!-- Customer table -->
+    <div class="section-header">
+      <div class="section-title">Customers</div>
+      <div class="section-count">847 total</div>
+      <div class="section-actions">
+        <div class="search">
+          🔍 <input type="text" placeholder="Search customers..." onfocus="playHover()">
+        </div>
+        <button class="btn btn-ghost magnetic" onclick="playClick()" style="font-size:11px">Filter ▾</button>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Customer</th>
+            <th>Last Visit</th>
+            <th>Spent</th>
+            <th>Visits</th>
+            <th>Churn Risk</th>
+            <th>Next Visit</th>
+            <th>LTV Score</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr onclick="playHover()">
+            <td><div class="cust-name">Sarah Johnson<small>sarah@email.com</small></div></td>
+            <td class="muted">3 days ago</td>
+            <td class="mono">$1,240</td>
+            <td class="mono">18</td>
+            <td><span class="risk risk-low">Low</span></td>
+            <td><span class="visit-soon">in 4 days</span></td>
+            <td>
+              <div class="score-wrap">
+                <span class="mono" style="color:var(--green)">92</span>
+                <div class="score-bar"><div class="score-fill" style="width:0%;background:var(--green)" data-w="92%"></div></div>
+              </div>
+            </td>
+            <td><button class="btn-outreach magnetic" onclick="handleOutreach(event,'Sarah Johnson')">⚡ Outreach</button></td>
+          </tr>
+          <tr onclick="playHover()">
+            <td><div class="cust-name">Marcus Webb<small>m.webb@gmail.com</small></div></td>
+            <td class="muted" style="color:var(--pink)">47 days ago</td>
+            <td class="mono">$380</td>
+            <td class="mono">5</td>
+            <td><span class="risk risk-high">High</span></td>
+            <td><span class="visit-overdue">overdue</span></td>
+            <td>
+              <div class="score-wrap">
+                <span class="mono" style="color:var(--pink)">28</span>
+                <div class="score-bar"><div class="score-fill" style="width:0%;background:var(--pink)" data-w="28%"></div></div>
+              </div>
+            </td>
+            <td><button class="btn-outreach magnetic" onclick="handleOutreach(event,'Marcus Webb')">⚡ Outreach</button></td>
+          </tr>
+          <tr onclick="playHover()">
+            <td><div class="cust-name">Priya Nair<small>priya.nair@work.co</small></div></td>
+            <td class="muted">12 days ago</td>
+            <td class="mono">$2,810</td>
+            <td class="mono">31</td>
+            <td><span class="risk risk-low">Low</span></td>
+            <td><span class="visit-soon">in 2 days</span></td>
+            <td>
+              <div class="score-wrap">
+                <span class="mono" style="color:var(--green)">97</span>
+                <div class="score-bar"><div class="score-fill" style="width:0%;background:var(--green)" data-w="97%"></div></div>
+              </div>
+            </td>
+            <td><button class="btn-outreach magnetic" onclick="handleOutreach(event,'Priya Nair')">⚡ Outreach</button></td>
+          </tr>
+          <tr onclick="playHover()">
+            <td><div class="cust-name">Devon Clarke<small>dclarke@icloud.com</small></div></td>
+            <td class="muted">22 days ago</td>
+            <td class="mono">$640</td>
+            <td class="mono">8</td>
+            <td><span class="risk risk-med">Medium</span></td>
+            <td><span class="visit-med">in 8 days</span></td>
+            <td>
+              <div class="score-wrap">
+                <span class="mono" style="color:var(--yellow)">61</span>
+                <div class="score-bar"><div class="score-fill" style="width:0%;background:var(--yellow)" data-w="61%"></div></div>
+              </div>
+            </td>
+            <td><button class="btn-outreach magnetic" onclick="handleOutreach(event,'Devon Clarke')">⚡ Outreach</button></td>
+          </tr>
+          <tr onclick="playHover()">
+            <td><div class="cust-name">Aisha Mensah<small>aisha.m@yahoo.com</small></div></td>
+            <td class="muted" style="color:var(--pink)">61 days ago</td>
+            <td class="mono">$190</td>
+            <td class="mono">3</td>
+            <td><span class="risk risk-high">High</span></td>
+            <td><span class="visit-overdue">overdue</span></td>
+            <td>
+              <div class="score-wrap">
+                <span class="mono" style="color:var(--pink)">14</span>
+                <div class="score-bar"><div class="score-fill" style="width:0%;background:var(--pink)" data-w="14%"></div></div>
+              </div>
+            </td>
+            <td><button class="btn-outreach magnetic" onclick="handleOutreach(event,'Aisha Mensah')">⚡ Outreach</button></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- AI Outreach strip -->
+    <div class="ai-strip">
+      <div class="ai-icon">🤖</div>
+      <div class="ai-text">
+        <h4>43 customers at high churn risk</h4>
+        <p>AI can generate personalized win-back messages for each one — you review before sending</p>
+      </div>
+      <div class="ai-actions">
+        <button class="btn btn-ghost magnetic" onclick="playClick()" style="font-size:11px">View All</button>
+        <button class="btn-ai magnetic" onclick="handleBatchOutreach()">⚡ Generate All Outreach</button>
+      </div>
+    </div>
+
+  </div><!-- /main -->
+</div><!-- /app -->
+
+<script>
+// ─────────────────────────────────────────
+// WEB AUDIO API — Scientifically-backed sounds
+// Research: 500-2kHz optimal for UI sounds, 50-200ms duration
+// Sine = smooth/pleasant, avoid harsh click artifact via gain ramp
+// ─────────────────────────────────────────
+let audioCtx = null;
+function getAudio() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
+
+function playTone(freq, type = 'sine', dur = 0.08, vol = 0.12, freqEnd = null) {
+  try {
+    const ctx = getAudio();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, ctx.currentTime);
+    if (freqEnd) osc.frequency.exponentialRampToValueAtTime(freqEnd, ctx.currentTime + dur);
+    gain.gain.setValueAtTime(0, ctx.currentTime);
+    gain.gain.linearRampToValueAtTime(vol, ctx.currentTime + 0.008);
+    gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + dur);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + dur + 0.01);
+  } catch(e) {}
+}
+
+// Click: 880Hz sine, 80ms — clean tech feel, within 500-2kHz sweet spot
+function playClick() {
+  playTone(880, 'sine', 0.08, 0.1);
+}
+
+// Hover: 1200Hz sine, very subtle — subconscious awareness trigger
+function playHover() {
+  playTone(1200, 'sine', 0.04, 0.03);
+}
+
+// Success: ascending C-E-G major chord — proven dopamine trigger
+function playSuccess() {
+  playTone(523, 'sine', 0.15, 0.12);  // C5
+  setTimeout(() => playTone(659, 'sine', 0.15, 0.12), 100);  // E5
+  setTimeout(() => playTone(784, 'sine', 0.20, 0.15), 200);  // G5
+}
+
+// AI generating: sweeping sine 300→900Hz — sci-fi computing feel
+function playAI() {
+  playTone(300, 'sine', 0.4, 0.08, 900);
+  setTimeout(() => playTone(600, 'triangle', 0.3, 0.05, 1200), 300);
+}
+
+// Sync: rising sweep — data flowing in
+function playSync() {
+  playTone(400, 'sine', 0.3, 0.1, 800);
+}
+
+// ─────────────────────────────────────────
+// PARTICLE SYSTEM — tsParticles-style, pure canvas
+// ─────────────────────────────────────────
+const canvas = document.getElementById('canvas');
+const ctx2 = canvas.getContext('2d');
+let W, H, particles = [], mouse = { x: -9999, y: -9999 };
+
+const COLORS = ['#00f5ff', '#ff2d78', '#a855f7', '#22d3ee'];
+
+function resize() {
+  W = canvas.width = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+}
+
+function randomColor() {
+  return COLORS[Math.floor(Math.random() * COLORS.length)];
+}
+
+function spawnParticles(n = 80) {
+  particles = [];
+  for (let i = 0; i < n; i++) {
+    particles.push({
+      x: Math.random() * W,
+      y: Math.random() * H,
+      vx: (Math.random() - 0.5) * 0.4,
+      vy: (Math.random() - 0.5) * 0.4,
+      r: Math.random() * 1.5 + 0.5,
+      color: randomColor(),
+      alpha: Math.random() * 0.5 + 0.2
+    });
+  }
+}
+
+function drawParticles() {
+  ctx2.clearRect(0, 0, W, H);
+
+  // Draw connections
+  for (let i = 0; i < particles.length; i++) {
+    for (let j = i + 1; j < particles.length; j++) {
+      const dx = particles[i].x - particles[j].x;
+      const dy = particles[i].y - particles[j].y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < 120) {
+        const alpha = (1 - dist / 120) * 0.12;
+        ctx2.beginPath();
+        ctx2.moveTo(particles[i].x, particles[i].y);
+        ctx2.lineTo(particles[j].x, particles[j].y);
+        ctx2.strokeStyle = `rgba(0,245,255,${alpha})`;
+        ctx2.lineWidth = 0.5;
+        ctx2.stroke();
+      }
+    }
+  }
+
+  // Draw particles
+  for (const p of particles) {
+    // Mouse repulsion
+    const dx = p.x - mouse.x;
+    const dy = p.y - mouse.y;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    if (dist < 100) {
+      p.vx += (dx / dist) * 0.06;
+      p.vy += (dy / dist) * 0.06;
+    }
+
+    p.x += p.vx;
+    p.y += p.vy;
+
+    // Speed limit
+    const spd = Math.sqrt(p.vx * p.vx + p.vy * p.vy);
+    if (spd > 1.2) { p.vx *= 0.97; p.vy *= 0.97; }
+
+    // Soft bounce
+    if (p.x < 0) p.vx += 0.05;
+    if (p.x > W) p.vx -= 0.05;
+    if (p.y < 0) p.vy += 0.05;
+    if (p.y > H) p.vy -= 0.05;
+
+    ctx2.beginPath();
+    ctx2.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+    ctx2.fillStyle = p.color;
+    ctx2.globalAlpha = p.alpha;
+    ctx2.shadowColor = p.color;
+    ctx2.shadowBlur = 6;
+    ctx2.fill();
+    ctx2.globalAlpha = 1;
+    ctx2.shadowBlur = 0;
+  }
+
+  requestAnimationFrame(drawParticles);
+}
+
+window.addEventListener('resize', () => { resize(); spawnParticles(); });
+window.addEventListener('mousemove', e => { mouse.x = e.clientX; mouse.y = e.clientY; });
+resize(); spawnParticles(); drawParticles();
+
+// ─────────────────────────────────────────
+// MAGNETIC BUTTON EFFECT
+// Cursor-attracted buttons — feels "alive"
+// ─────────────────────────────────────────
+document.querySelectorAll('.magnetic').forEach(el => {
+  el.addEventListener('mousemove', e => {
+    const rect = el.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+    const dx = e.clientX - cx;
+    const dy = e.clientY - cy;
+    el.style.transform = `translate(${dx * 0.25}px, ${dy * 0.25}px)`;
+    // Tooltip mouse position for inner light
+    const mx = ((e.clientX - rect.left) / rect.width * 100).toFixed(0);
+    const my = ((e.clientY - rect.top) / rect.height * 100).toFixed(0);
+    el.style.setProperty('--mx', mx + '%');
+    el.style.setProperty('--my', my + '%');
+  });
+  el.addEventListener('mouseleave', e => {
+    el.style.transform = 'translate(0,0)';
+    el.style.transition = 'transform 0.4s cubic-bezier(0.34,1.56,0.64,1)';
+    setTimeout(() => el.style.transition = '', 400);
+  });
+  el.addEventListener('mouseenter', () => playHover());
+});
+
+// ─────────────────────────────────────────
+// RIPPLE EFFECT on click
+// ─────────────────────────────────────────
+document.querySelectorAll('.btn, .btn-outreach, .btn-ai').forEach(el => {
+  el.addEventListener('click', e => {
+    const rect = el.getBoundingClientRect();
+    const r = document.createElement('span');
+    r.className = 'ripple';
+    const size = Math.max(rect.width, rect.height);
+    r.style.cssText = `width:${size}px;height:${size}px;left:${e.clientX - rect.left - size/2}px;top:${e.clientY - rect.top - size/2}px`;
+    el.appendChild(r);
+    setTimeout(() => r.remove(), 600);
+  });
+});
+
+// ─────────────────────────────────────────
+// COUNTER ANIMATION — Zeigarnik dopamine trigger
+// Numbers counting up = anticipation + reward
+// ─────────────────────────────────────────
+function animateCounter(el) {
+  const target = parseInt(el.dataset.target);
+  const isDecimal = el.hasAttribute('data-decimal');
+  const isK = el.dataset.format === 'k';
+  const duration = 1800;
+  const start = performance.now();
+
+  function update(now) {
+    const p = Math.min((now - start) / duration, 1);
+    const ease = 1 - Math.pow(1 - p, 3);
+    const val = Math.floor(ease * target);
+    if (isK) el.textContent = (val / 1000).toFixed(1) + 'k';
+    else if (isDecimal) el.textContent = (val / 10).toFixed(1);
+    else el.textContent = val.toLocaleString();
+    if (p < 1) requestAnimationFrame(update);
+  }
+  requestAnimationFrame(update);
+}
+
+// ─────────────────────────────────────────
+// PROGRESS BAR ANIMATION
+// ─────────────────────────────────────────
+function animateBars() {
+  document.querySelectorAll('.stat-bar-fill').forEach(el => {
+    setTimeout(() => { el.style.width = el.dataset.w; }, 300);
+  });
+  document.querySelectorAll('.score-fill').forEach(el => {
+    setTimeout(() => { el.style.width = el.dataset.w; }, 600);
+  });
+}
+
+// ─────────────────────────────────────────
+// TOAST NOTIFICATION
+// ─────────────────────────────────────────
+function showToast(title, msg, color = 'var(--cyan)') {
+  const toast = document.getElementById('toast');
+  document.getElementById('toast-title').textContent = title;
+  document.getElementById('toast-msg').textContent = msg;
+  toast.style.borderColor = `rgba(${color === 'var(--cyan)' ? '0,245,255' : '168,85,247'},0.3)`;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 3500);
+}
+
+// ─────────────────────────────────────────
+// INTERACTIONS
+// ─────────────────────────────────────────
+function handleSync() {
+  playSync();
+  showToast('⟳ Syncing Square...', 'Fetching latest customer data');
+  setTimeout(() => {
+    playSuccess();
+    showToast('✓ Sync Complete', '847 customers updated · 3 new');
+  }, 2000);
+}
+
+function handleOutreach(e, name) {
+  e.stopPropagation();
+  playAI();
+  showToast('🤖 Generating Outreach', `Analyzing ${name}'s purchase history...`);
+  setTimeout(() => {
+    playSuccess();
+    showToast('✓ Draft Ready', `Review your message to ${name.split(' ')[0]}`);
+  }, 1800);
+}
+
+function handleBatchOutreach() {
+  playAI();
+  showToast('🤖 AI Processing', 'Generating 43 personalized messages...');
+  setTimeout(() => {
+    playSuccess();
+    showToast('✓ 43 Drafts Ready', 'Review before sending · 0 auto-sent');
+  }, 2200);
+}
+
+// ─────────────────────────────────────────
+// INIT — run on load
+// ─────────────────────────────────────────
+window.addEventListener('load', () => {
+  // Stagger counter start
+  document.querySelectorAll('.counter').forEach((el, i) => {
+    setTimeout(() => animateCounter(el), 400 + i * 150);
+  });
+  animateBars();
+
+  // Play a soft welcome tone
+  setTimeout(() => playTone(523, 'sine', 0.2, 0.05), 500);
+  setTimeout(() => playTone(659, 'sine', 0.2, 0.04), 650);
+});
+</script>
+</body>
+</html>

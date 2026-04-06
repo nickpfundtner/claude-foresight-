@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Foresight — Black & Orange v2</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #020202;
+    color: #e2e8f0;
+    font-family: -apple-system, 'Inter', BlinkMacSystemFont, sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  .layout { display: flex; min-height: 100vh; position: relative; z-index: 1; }
+
+  /* Subtle ambient orange glow in corners */
+  body::before {
+    content: '';
+    position: fixed;
+    top: -300px; left: -300px;
+    width: 700px; height: 700px;
+    background: radial-gradient(circle, rgba(249,115,22,0.035) 0%, transparent 65%);
+    pointer-events: none; z-index: 0;
+  }
+
+  /* SIDEBAR */
+  .sidebar {
+    width: 220px;
+    background: #060606;
+    border-right: 1px solid rgba(249,115,22,0.1);
+    padding: 24px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+
+  .logo {
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    padding: 0 8px 24px;
+    color: #f97316;
+    /* Soft glow — readable, not harsh */
+    text-shadow:
+      0 0 12px rgba(249,115,22,0.45),
+      0 0 30px rgba(249,115,22,0.15);
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    font-size: 13.5px;
+    font-weight: 500;
+    color: #444;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    border: 1px solid transparent;
+    user-select: none;
+  }
+
+  .nav-item:hover { color: #999; border-color: rgba(249,115,22,0.08); background: rgba(249,115,22,0.025); }
+
+  .nav-item.active {
+    color: #f97316;
+    background: rgba(249,115,22,0.07);
+    border-color: rgba(249,115,22,0.2);
+    text-shadow: 0 0 10px rgba(249,115,22,0.3);
+  }
+
+  .nav-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: #222;
+    transition: all 0.15s;
+    flex-shrink: 0;
+  }
+
+  .nav-item.active .nav-dot {
+    background: #f97316;
+    box-shadow: 0 0 6px rgba(249,115,22,0.8), 0 0 14px rgba(249,115,22,0.35);
+  }
+
+  /* MAIN */
+  .main { flex: 1; padding: 32px; overflow-y: auto; }
+
+  .topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 32px; }
+
+  .page-title { font-size: 26px; font-weight: 800; letter-spacing: -0.5px; color: #f1f1f1; }
+  .page-sub { font-size: 13px; color: #333; margin-top: 3px; }
+
+  /* BUTTONS */
+  .btn {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 10px 18px; border-radius: 10px;
+    font-size: 13.5px; font-weight: 700;
+    cursor: pointer; border: none;
+    transition: all 0.12s ease;
+    user-select: none; position: relative; overflow: hidden;
+  }
+  .btn:active { transform: scale(0.95); }
+
+  .btn-primary {
+    background: #f97316;
+    color: #000;
+    /* Multi-layer glow: tight warm core + wider soft halo */
+    box-shadow:
+      0 0 0 1px rgba(249,115,22,0.4),
+      0 4px 16px rgba(249,115,22,0.45),
+      0 8px 40px rgba(249,115,22,0.18),
+      0 0 80px rgba(249,115,22,0.07);
+  }
+  .btn-primary:hover {
+    background: #fb923c;
+    box-shadow:
+      0 0 0 1px rgba(251,146,60,0.5),
+      0 4px 20px rgba(249,115,22,0.6),
+      0 10px 60px rgba(249,115,22,0.28),
+      0 0 120px rgba(249,115,22,0.1);
+    transform: translateY(-1px);
+  }
+
+  .btn-ghost {
+    background: transparent; color: #555;
+    border: 1px solid #1c1c1c;
+  }
+  .btn-ghost:hover {
+    color: #f97316; border-color: rgba(249,115,22,0.25);
+    background: rgba(249,115,22,0.03);
+    text-shadow: 0 0 8px rgba(249,115,22,0.2);
+  }
+
+  /* TABS */
+  .tabs {
+    display: flex; gap: 2px;
+    background: #070707; border: 1px solid #181818;
+    border-radius: 12px; padding: 4px;
+    margin-bottom: 20px; width: fit-content;
+  }
+
+  .tab {
+    padding: 8px 16px; border-radius: 9px;
+    font-size: 13px; font-weight: 500;
+    color: #333; cursor: pointer;
+    transition: all 0.15s ease;
+    border: 1px solid transparent; user-select: none;
+  }
+  .tab:hover { color: #777; }
+  .tab.active {
+    background: rgba(249,115,22,0.09);
+    color: #f97316;
+    border-color: rgba(249,115,22,0.22);
+    text-shadow: 0 0 8px rgba(249,115,22,0.25);
+    box-shadow: 0 0 16px rgba(249,115,22,0.06);
+  }
+
+  /* CHART TOGGLE */
+  .chart-toggle {
+    display: flex; gap: 2px;
+    background: #080808; border: 1px solid #181818;
+    border-radius: 8px; padding: 3px;
+    margin-bottom: 20px;
+  }
+  .ctab {
+    padding: 5px 12px; border-radius: 6px;
+    font-size: 11px; font-weight: 600; letter-spacing: 0.5px;
+    color: #333; cursor: pointer;
+    transition: all 0.12s;
+    user-select: none; border: 1px solid transparent;
+  }
+  .ctab:hover { color: #666; }
+  .ctab.active {
+    background: rgba(249,115,22,0.1);
+    color: #f97316;
+    border-color: rgba(249,115,22,0.2);
+    text-shadow: 0 0 6px rgba(249,115,22,0.2);
+  }
+
+  /* STAT CARDS */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+
+  .stat-card {
+    background: #070707;
+    border: 1px solid #161616;
+    border-radius: 14px;
+    padding: 18px 18px 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .stat-card::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(249,115,22,0.25), transparent);
+  }
+
+  .stat-card:hover {
+    border-color: rgba(249,115,22,0.18);
+    box-shadow: 0 0 40px rgba(249,115,22,0.05), 0 2px 20px rgba(0,0,0,0.5);
+    transform: translateY(-2px);
+  }
+
+  .stat-label {
+    font-size: 10px; font-weight: 700;
+    letter-spacing: 1px; text-transform: uppercase;
+    color: #2e2e2e; margin-bottom: 8px;
+  }
+
+  .stat-value {
+    font-size: 28px; font-weight: 800;
+    letter-spacing: -1px; line-height: 1;
+    margin-bottom: 14px;
+    /* Gentle orange glow on numbers */
+    color: #f8fafc;
+  }
+
+  .stat-value.orange {
+    color: #f97316;
+    text-shadow: 0 0 16px rgba(249,115,22,0.35), 0 0 40px rgba(249,115,22,0.1);
+  }
+
+  .stat-badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 10.5px; font-weight: 600;
+    padding: 3px 8px; border-radius: 6px; margin-top: 8px;
+  }
+  .badge-orange { background: rgba(249,115,22,0.08); color: #f97316; border: 1px solid rgba(249,115,22,0.15); }
+  .badge-red { background: rgba(239,68,68,0.08); color: #ef4444; border: 1px solid rgba(239,68,68,0.15); }
+  .badge-green { background: rgba(34,197,94,0.06); color: #22c55e; border: 1px solid rgba(34,197,94,0.12); }
+
+  /* SPARKLINE SVG */
+  .sparkline { display: block; width: 100%; height: 40px; }
+  .spark-line { fill: none; stroke: #f97316; stroke-width: 1.5; }
+  .spark-fill { fill: url(#sparkGrad); }
+  .spark-dot { fill: #f97316; filter: drop-shadow(0 0 3px rgba(249,115,22,0.8)); }
+
+  /* BAR CHART */
+  .bar-chart { display: flex; align-items: flex-end; gap: 3px; height: 40px; width: 100%; }
+  .bar {
+    flex: 1; border-radius: 3px 3px 0 0;
+    background: linear-gradient(180deg, #f97316, rgba(249,115,22,0.3));
+    transition: all 0.3s ease;
+    position: relative;
+    min-height: 4px;
+  }
+  .bar:hover { background: linear-gradient(180deg, #fb923c, rgba(251,146,60,0.5)); }
+  .bar.red { background: linear-gradient(180deg, #ef4444, rgba(239,68,68,0.25)); }
+  .bar.green { background: linear-gradient(180deg, #22c55e, rgba(34,197,94,0.2)); }
+
+  /* STAT CHART CONTAINERS */
+  .stat-chart { height: 40px; margin-bottom: 6px; }
+
+  /* TABLE */
+  .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .section-title { font-size: 10px; font-weight: 700; color: #2a2a2a; letter-spacing: 1px; text-transform: uppercase; }
+
+  .table-wrap { background: #060606; border: 1px solid #121212; border-radius: 14px; overflow: hidden; }
+
+  .table-head {
+    display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+    padding: 12px 20px; border-bottom: 1px solid #0e0e0e;
+    font-size: 10px; font-weight: 700; letter-spacing: 1px;
+    text-transform: uppercase; color: #252525;
+  }
+
+  .table-row {
+    display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+    padding: 13px 20px; border-bottom: 1px solid #0a0a0a;
+    align-items: center; cursor: pointer;
+    transition: all 0.12s ease; position: relative;
+  }
+  .table-row::before {
+    content: ''; position: absolute;
+    left: 0; top: 0; bottom: 0; width: 0;
+    background: linear-gradient(90deg, rgba(249,115,22,0.18), transparent);
+    transition: width 0.18s ease;
+    border-radius: 0 3px 3px 0;
+  }
+  .table-row:hover { background: rgba(249,115,22,0.015); }
+  .table-row:hover::before { width: 3px; }
+  .table-row:last-child { border-bottom: none; }
+
+  .customer-name { font-weight: 600; color: #ccc; display: flex; align-items: center; gap: 10px; }
+  .customer-email { font-size: 11px; color: #252525; margin-top: 2px; }
+  .avatar {
+    width: 32px; height: 32px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 800; flex-shrink: 0;
+    border: 1px solid rgba(249,115,22,0.12);
+  }
+  .col-value { color: #333; font-size: 13px; }
+  .col-money { color: #777; font-weight: 600; font-size: 13px; }
+
+  .risk-high { background: rgba(239,68,68,0.08); color: #ef4444; border: 1px solid rgba(239,68,68,0.15); border-radius: 6px; padding: 3px 8px; font-size: 10px; font-weight: 700; }
+  .risk-med { background: rgba(249,115,22,0.08); color: #f97316; border: 1px solid rgba(249,115,22,0.18); border-radius: 6px; padding: 3px 8px; font-size: 10px; font-weight: 700; }
+  .risk-low { background: rgba(34,197,94,0.06); color: #22c55e; border: 1px solid rgba(34,197,94,0.12); border-radius: 6px; padding: 3px 8px; font-size: 10px; font-weight: 700; }
+
+  /* RIPPLE */
+  @keyframes ripple { to { transform: scale(5); opacity: 0; } }
+  .ripple { position: absolute; border-radius: 50%; width: 16px; height: 16px; background: rgba(249,115,22,0.45); transform: scale(0); animation: ripple 0.5s linear; pointer-events: none; }
+
+  /* PARTICLES */
+  .particle { position: fixed; pointer-events: none; border-radius: 50%; animation: floatUp 0.9s ease-out forwards; z-index: 9999; }
+  @keyframes floatUp {
+    0% { transform: translateY(0) scale(1); opacity: 1; }
+    100% { transform: translateY(-90px) scale(0); opacity: 0; }
+  }
+
+  /* TOAST */
+  .toast {
+    position: fixed; bottom: 28px; right: 28px;
+    background: #080808; border: 1px solid rgba(249,115,22,0.28);
+    border-radius: 12px; padding: 14px 20px;
+    font-size: 13.5px; font-weight: 500; color: #ddd;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.8), 0 0 30px rgba(249,115,22,0.06);
+    display: flex; align-items: center; gap: 10px;
+    transform: translateY(80px); opacity: 0;
+    transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    z-index: 1000;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast-dot { width: 8px; height: 8px; border-radius: 50%; background: #f97316; box-shadow: 0 0 8px rgba(249,115,22,0.8), 0 0 16px rgba(249,115,22,0.3); flex-shrink: 0; }
+
+  @keyframes orangeGlow {
+    0%,100% { box-shadow: 0 0 0 1px rgba(249,115,22,0.4), 0 4px 16px rgba(249,115,22,0.45), 0 8px 40px rgba(249,115,22,0.18); }
+    50% { box-shadow: 0 0 0 1px rgba(251,146,60,0.5), 0 4px 24px rgba(249,115,22,0.65), 0 12px 60px rgba(249,115,22,0.3); }
+  }
+  .btn-primary:hover { animation: orangeGlow 2s ease infinite; }
+</style>
+</head>
+<body>
+<div class="layout">
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="logo">Foresight</div>
+    <div class="nav-item active" onclick="playNav(this)"><div class="nav-dot"></div>Dashboard</div>
+    <div class="nav-item" onclick="playNav(this)"><div class="nav-dot"></div>Customers</div>
+    <div class="nav-item" onclick="playNav(this)"><div class="nav-dot"></div>Predictions</div>
+    <div class="nav-item" onclick="playNav(this)"><div class="nav-dot"></div>Integrations</div>
+    <div class="nav-item" onclick="playNav(this)"><div class="nav-dot"></div>Reports</div>
+    <div style="margin-top:auto;padding-top:20px;border-top:1px solid #0f0f0f;">
+      <div class="nav-item" onclick="playNav(this)"><div class="nav-dot"></div>Settings</div>
+    </div>
+  </div>
+
+  <div class="main">
+    <!-- TOPBAR -->
+    <div class="topbar">
+      <div>
+        <div class="page-title">Dashboard</div>
+        <div class="page-sub">Thursday, March 19 · Bella's Salon & Co.</div>
+      </div>
+      <div style="display:flex;gap:10px;">
+        <button class="btn btn-ghost" onclick="playGhost(this,event)">Sync Square</button>
+        <button class="btn btn-primary" onclick="playSuccess(this,event)">Run Predictions</button>
+      </div>
+    </div>
+
+    <!-- PAGE TABS + CHART TOGGLE ROW -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+      <div class="tabs" style="margin-bottom:0;">
+        <div class="tab active" onclick="playTab(this)">Overview</div>
+        <div class="tab" onclick="playTab(this)">At-Risk</div>
+        <div class="tab" onclick="playTab(this)">Loyal</div>
+        <div class="tab" onclick="playTab(this)">New</div>
+      </div>
+      <div class="chart-toggle">
+        <div class="ctab active" onclick="switchChart(this,'sparkline')">&#9135; Sparkline</div>
+        <div class="ctab" onclick="switchChart(this,'bar')">&#9646;&#9646; Bar</div>
+        <div class="ctab" onclick="switchChart(this,'none')">123 Numbers</div>
+      </div>
+    </div>
+
+    <!-- STAT CARDS -->
+    <div class="stats-grid">
+
+      <!-- Card 1: Customers -->
+      <div class="stat-card" onclick="playTick(this,event)">
+        <div class="stat-label">Total Customers</div>
+        <div class="stat-value orange">248</div>
+        <div class="stat-chart">
+          <!-- Sparkline -->
+          <div class="chart-vis sparkline-vis">
+            <svg class="sparkline" viewBox="0 0 100 40" preserveAspectRatio="none">
+              <defs>
+                <linearGradient id="g1" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#f97316" stop-opacity="0.25"/>
+                  <stop offset="100%" stop-color="#f97316" stop-opacity="0"/>
+                </linearGradient>
+              </defs>
+              <path class="spark-fill" d="M0,30 L12,26 L24,28 L36,20 L48,22 L60,14 L72,16 L84,8 L100,4 L100,40 L0,40 Z"/>
+              <path class="spark-line" d="M0,30 L12,26 L24,28 L36,20 L48,22 L60,14 L72,16 L84,8 L100,4"/>
+              <circle class="spark-dot" cx="100" cy="4" r="2.5"/>
+            </svg>
+          </div>
+          <!-- Bar chart -->
+          <div class="chart-vis bar-vis" style="display:none;">
+            <div class="bar-chart">
+              <div class="bar" style="height:45%;"></div>
+              <div class="bar" style="height:52%;"></div>
+              <div class="bar" style="height:48%;"></div>
+              <div class="bar" style="height:60%;"></div>
+              <div class="bar" style="height:55%;"></div>
+              <div class="bar" style="height:72%;"></div>
+              <div class="bar" style="height:68%;"></div>
+              <div class="bar" style="height:85%;"></div>
+              <div class="bar" style="height:100%;"></div>
+            </div>
+          </div>
+          <!-- Numbers only -->
+          <div class="chart-vis number-vis" style="display:none;padding-top:6px;">
+            <div style="font-size:10px;color:#333;display:flex;justify-content:space-between;">
+              <span>Jul <span style="color:#555;">201</span></span>
+              <span>Sep <span style="color:#555;">218</span></span>
+              <span>Nov <span style="color:#555;">234</span></span>
+              <span>Now <span style="color:#f97316;text-shadow:0 0 8px rgba(249,115,22,0.3);">248</span></span>
+            </div>
+          </div>
+        </div>
+        <span class="stat-badge badge-orange">+12 this month</span>
+      </div>
+
+      <!-- Card 2: Revenue -->
+      <div class="stat-card" onclick="playTick(this,event)">
+        <div class="stat-label">Total Revenue</div>
+        <div class="stat-value orange">$38.4k</div>
+        <div class="stat-chart">
+          <div class="chart-vis sparkline-vis">
+            <svg class="sparkline" viewBox="0 0 100 40" preserveAspectRatio="none">
+              <defs>
+                <linearGradient id="g2" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#f97316" stop-opacity="0.25"/>
+                  <stop offset="100%" stop-color="#f97316" stop-opacity="0"/>
+                </linearGradient>
+              </defs>
+              <path style="fill:url(#g2);" d="M0,36 L12,30 L24,32 L36,24 L48,20 L60,26 L72,12 L84,8 L100,2 L100,40 L0,40 Z"/>
+              <path class="spark-line" d="M0,36 L12,30 L24,32 L36,24 L48,20 L60,26 L72,12 L84,8 L100,2"/>
+              <circle class="spark-dot" cx="100" cy="2" r="2.5"/>
+            </svg>
+          </div>
+          <div class="chart-vis bar-vis" style="display:none;">
+            <div class="bar-chart">
+              <div class="bar" style="height:38%;"></div>
+              <div class="bar" style="height:50%;"></div>
+              <div class="bar" style="height:44%;"></div>
+              <div class="bar" style="height:62%;"></div>
+              <div class="bar" style="height:58%;"></div>
+              <div class="bar" style="height:45%;"></div>
+              <div class="bar" style="height:78%;"></div>
+              <div class="bar" style="height:82%;"></div>
+              <div class="bar" style="height:100%;"></div>
+            </div>
+          </div>
+          <div class="chart-vis number-vis" style="display:none;padding-top:6px;">
+            <div style="font-size:10px;color:#333;display:flex;justify-content:space-between;">
+              <span>Jul <span style="color:#555;">$26k</span></span>
+              <span>Sep <span style="color:#555;">$29k</span></span>
+              <span>Nov <span style="color:#555;">$34k</span></span>
+              <span>Now <span style="color:#f97316;text-shadow:0 0 8px rgba(249,115,22,0.3);">$38.4k</span></span>
+            </div>
+          </div>
+        </div>
+        <span class="stat-badge badge-orange">+$4.2k vs last mo</span>
+      </div>
+
+      <!-- Card 3: Churn Risk -->
+      <div class="stat-card" onclick="playTick(this,event)">
+        <div class="stat-label">High Churn Risk</div>
+        <div class="stat-value" style="color:#ef4444;text-shadow:0 0 14px rgba(239,68,68,0.3),0 0 35px rgba(239,68,68,0.1);">31</div>
+        <div class="stat-chart">
+          <div class="chart-vis sparkline-vis">
+            <svg class="sparkline" viewBox="0 0 100 40" preserveAspectRatio="none">
+              <defs>
+                <linearGradient id="g3" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#ef4444" stop-opacity="0.2"/>
+                  <stop offset="100%" stop-color="#ef4444" stop-opacity="0"/>
+                </linearGradient>
+              </defs>
+              <path style="fill:url(#g3);" d="M0,20 L12,24 L24,18 L36,28 L48,22 L60,18 L72,26 L84,20 L100,14 L100,40 L0,40 Z"/>
+              <path style="fill:none;stroke:#ef4444;stroke-width:1.5;" d="M0,20 L12,24 L24,18 L36,28 L48,22 L60,18 L72,26 L84,20 L100,14"/>
+              <circle style="fill:#ef4444;filter:drop-shadow(0 0 3px rgba(239,68,68,0.8));" cx="100" cy="14" r="2.5"/>
+            </svg>
+          </div>
+          <div class="chart-vis bar-vis" style="display:none;">
+            <div class="bar-chart">
+              <div class="bar red" style="height:55%;"></div>
+              <div class="bar red" style="height:62%;"></div>
+              <div class="bar red" style="height:48%;"></div>
+              <div class="bar red" style="height:70%;"></div>
+              <div class="bar red" style="height:55%;"></div>
+              <div class="bar red" style="height:45%;"></div>
+              <div class="bar red" style="height:65%;"></div>
+              <div class="bar red" style="height:50%;"></div>
+              <div class="bar red" style="height:40%;"></div>
+            </div>
+          </div>
+          <div class="chart-vis number-vis" style="display:none;padding-top:6px;">
+            <div style="font-size:10px;color:#333;display:flex;justify-content:space-between;">
+              <span>Jul <span style="color:#555;">44</span></span>
+              <span>Sep <span style="color:#555;">38</span></span>
+              <span>Nov <span style="color:#555;">35</span></span>
+              <span>Now <span style="color:#ef4444;text-shadow:0 0 8px rgba(239,68,68,0.3);">31</span></span>
+            </div>
+          </div>
+        </div>
+        <span class="stat-badge badge-red">Needs attention</span>
+      </div>
+
+      <!-- Card 4: Avg Visits -->
+      <div class="stat-card" onclick="playTick(this,event)">
+        <div class="stat-label">Avg Visits / Customer</div>
+        <div class="stat-value" style="color:#22c55e;text-shadow:0 0 14px rgba(34,197,94,0.25),0 0 35px rgba(34,197,94,0.08);">6.2</div>
+        <div class="stat-chart">
+          <div class="chart-vis sparkline-vis">
+            <svg class="sparkline" viewBox="0 0 100 40" preserveAspectRatio="none">
+              <defs>
+                <linearGradient id="g4" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#22c55e" stop-opacity="0.2"/>
+                  <stop offset="100%" stop-color="#22c55e" stop-opacity="0"/>
+                </linearGradient>
+              </defs>
+              <path style="fill:url(#g4);" d="M0,32 L12,28 L24,30 L36,24 L48,26 L60,18 L72,20 L84,14 L100,10 L100,40 L0,40 Z"/>
+              <path style="fill:none;stroke:#22c55e;stroke-width:1.5;" d="M0,32 L12,28 L24,30 L36,24 L48,26 L60,18 L72,20 L84,14 L100,10"/>
+              <circle style="fill:#22c55e;filter:drop-shadow(0 0 3px rgba(34,197,94,0.8));" cx="100" cy="10" r="2.5"/>
+            </svg>
+          </div>
+          <div class="chart-vis bar-vis" style="display:none;">
+            <div class="bar-chart">
+              <div class="bar green" style="height:40%;"></div>
+              <div class="bar green" style="height:50%;"></div>
+              <div class="bar green" style="height:45%;"></div>
+              <div class="bar green" style="height:62%;"></div>
+              <div class="bar green" style="height:58%;"></div>
+              <div class="bar green" style="height:72%;"></div>
+              <div class="bar green" style="height:68%;"></div>
+              <div class="bar green" style="height:82%;"></div>
+              <div class="bar green" style="height:100%;"></div>
+            </div>
+          </div>
+          <div class="chart-vis number-vis" style="display:none;padding-top:6px;">
+            <div style="font-size:10px;color:#333;display:flex;justify-content:space-between;">
+              <span>Jul <span style="color:#555;">4.1</span></span>
+              <span>Sep <span style="color:#555;">4.8</span></span>
+              <span>Nov <span style="color:#555;">5.5</span></span>
+              <span>Now <span style="color:#22c55e;text-shadow:0 0 8px rgba(34,197,94,0.3);">6.2</span></span>
+            </div>
+          </div>
+        </div>
+        <span class="stat-badge badge-green">Above avg</span>
+      </div>
+    </div>
+
+    <!-- TABLE -->
+    <div class="section-header">
+      <div class="section-title">Customer Intelligence</div>
+      <button class="btn btn-ghost" style="font-size:12px;padding:7px 14px;" onclick="playGhost(this,event)">Export CSV</button>
+    </div>
+
+    <div class="table-wrap">
+      <div class="table-head">
+        <span>Customer</span><span>Visits</span><span>Spent</span><span>Last Visit</span><span>Risk</span>
+      </div>
+      <div class="table-row" onclick="playRow(this,event)">
+        <div class="customer-name">
+          <div class="avatar" style="background:#180800;color:#f97316;">SJ</div>
+          <div><div>Sarah Johnson</div><div class="customer-email">sarah@email.com</div></div>
+        </div>
+        <div class="col-value">14</div><div class="col-money">$1,240</div><div class="col-value">32d ago</div>
+        <div><span class="risk-high">HIGH</span></div>
+      </div>
+      <div class="table-row" onclick="playRow(this,event)">
+        <div class="customer-name">
+          <div class="avatar" style="background:#180e00;color:#fb923c;">MW</div>
+          <div><div>Marcus Williams</div><div class="customer-email">marcus@email.com</div></div>
+        </div>
+        <div class="col-value">9</div><div class="col-money">$890</div><div class="col-value">18d ago</div>
+        <div><span class="risk-med">MED</span></div>
+      </div>
+      <div class="table-row" onclick="playRow(this,event)">
+        <div class="customer-name">
+          <div class="avatar" style="background:#001808;color:#22c55e;">PL</div>
+          <div><div>Priya Lalwani</div><div class="customer-email">priya@email.com</div></div>
+        </div>
+        <div class="col-value">27</div><div class="col-money">$3,410</div><div class="col-value">3d ago</div>
+        <div><span class="risk-low">LOW</span></div>
+      </div>
+      <div class="table-row" onclick="playRow(this,event)">
+        <div class="customer-name">
+          <div class="avatar" style="background:#0c1800;color:#84cc16;">DK</div>
+          <div><div>David Kim</div><div class="customer-email">david@email.com</div></div>
+        </div>
+        <div class="col-value">19</div><div class="col-money">$2,180</div><div class="col-value">7d ago</div>
+        <div><span class="risk-low">LOW</span></div>
+      </div>
+      <div class="table-row" onclick="playRow(this,event)">
+        <div class="customer-name">
+          <div class="avatar" style="background:#180000;color:#ef4444;">AT</div>
+          <div><div>Aisha Thompson</div><div class="customer-email">aisha@email.com</div></div>
+        </div>
+        <div class="col-value">5</div><div class="col-money">$420</div><div class="col-value">41d ago</div>
+        <div><span class="risk-high">HIGH</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast">
+  <div class="toast-dot"></div>
+  <span id="toast-msg">Predictions complete — 3 customers flagged</span>
+</div>
+
+<script>
+// ── AUDIO ─────────────────────────────────────────────────────────────────
+const AC = new (window.AudioContext || window.webkitAudioContext)();
+function resume() { if (AC.state === 'suspended') AC.resume(); }
+
+function note(freq, start, vol, dur, type='sine') {
+  const o = AC.createOscillator(), g = AC.createGain();
+  o.connect(g); g.connect(AC.destination);
+  o.type = type; o.frequency.setValueAtTime(freq, start);
+  g.gain.setValueAtTime(0, start);
+  g.gain.linearRampToValueAtTime(vol, start + 0.02);
+  g.gain.exponentialRampToValueAtTime(0.001, start + dur);
+  o.start(start); o.stop(start + dur + 0.02);
+}
+
+function playNav(el) {
+  resume();
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  el.classList.add('active');
+  note(480, AC.currentTime, 0.09, 0.1);
+}
+
+function playTab(el) {
+  resume();
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  note(660, AC.currentTime, 0.08, 0.08, 'triangle');
+}
+
+function playGhost(el, e) {
+  resume(); ripple(el, e);
+  note(700, AC.currentTime, 0.08, 0.07);
+}
+
+function playTick(el, e) {
+  resume(); ripple(el, e);
+  const t = AC.currentTime;
+  note(820, t, 0.08, 0.08);
+  note(640, t + 0.05, 0.05, 0.06);
+}
+
+function playRow(el, e) {
+  resume();
+  note(600, AC.currentTime, 0.06, 0.06);
+}
+
+function playSuccess(el, e) {
+  resume(); ripple(el, e); spawnParticles(e);
+  showToast('Predictions complete — 3 customers flagged');
+  const t = AC.currentTime;
+  note(370, t, 0.18, 0.3);
+  note(466, t + 0.13, 0.2, 0.3);
+  note(554, t + 0.24, 0.16, 0.35);
+  note(1108, t + 0.24, 0.06, 0.25);
+}
+
+// ── CHART TOGGLE ──────────────────────────────────────────────────────────
+function switchChart(el, mode) {
+  resume();
+  document.querySelectorAll('.ctab').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  note(560, AC.currentTime, 0.07, 0.07, 'triangle');
+
+  document.querySelectorAll('.sparkline-vis').forEach(v => v.style.display = mode === 'sparkline' ? 'block' : 'none');
+  document.querySelectorAll('.bar-vis').forEach(v => v.style.display = mode === 'bar' ? 'block' : 'none');
+  document.querySelectorAll('.number-vis').forEach(v => v.style.display = mode === 'none' ? 'block' : 'none');
+}
+
+// ── RIPPLE ────────────────────────────────────────────────────────────────
+function ripple(el, e) {
+  if (!e) return;
+  const r = document.createElement('span');
+  r.className = 'ripple';
+  const rect = el.getBoundingClientRect();
+  r.style.left = (e.clientX - rect.left - 8) + 'px';
+  r.style.top = (e.clientY - rect.top - 8) + 'px';
+  el.appendChild(r);
+  setTimeout(() => r.remove(), 600);
+}
+
+// ── PARTICLES ─────────────────────────────────────────────────────────────
+function spawnParticles(e) {
+  const colors = ['#f97316','#fb923c','#fbbf24','#ef4444','#fdba74','#fff7ed'];
+  for (let i = 0; i < 22; i++) {
+    setTimeout(() => {
+      const p = document.createElement('div');
+      p.className = 'particle';
+      const s = 4 + Math.random() * 6;
+      p.style.cssText = `left:${e.clientX+(Math.random()-.5)*90}px;top:${e.clientY+(Math.random()-.5)*50}px;width:${s}px;height:${s}px;background:${colors[Math.floor(Math.random()*colors.length)]};box-shadow:0 0 8px currentColor;animation-duration:${0.7+Math.random()*0.5}s;animation-delay:${Math.random()*0.08}s;`;
+      document.body.appendChild(p);
+      setTimeout(() => p.remove(), 1400);
+    }, i * 12);
+  }
+}
+
+// ── TOAST ─────────────────────────────────────────────────────────────────
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  document.getElementById('toast-msg').textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3500);
+}
+</script>
+</body>
+</html>
