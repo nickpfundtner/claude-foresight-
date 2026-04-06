@@ -6,7 +6,7 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'ghost'
 }
 
-export default function Button({ variant = 'primary', className = '', onClick, children, ...props }: ButtonProps) {
+export default function Button({ variant = 'primary', className = '', style, onClick, children, ...props }: ButtonProps) {
   const ref = useRef<HTMLButtonElement>(null)
 
   function handleClick(e: React.MouseEvent<HTMLButtonElement>) {
@@ -34,15 +34,20 @@ export default function Button({ variant = 'primary', className = '', onClick, c
     'relative overflow-hidden px-4 py-2 rounded-lg font-semibold text-sm transition-all cursor-pointer select-none'
   const variants = {
     primary:
-      'bg-p0 text-white shadow-[0_0_12px_2px_rgba(255,96,64,0.4)] hover:shadow-[0_0_20px_6px_rgba(255,96,64,0.6)] hover:bg-p1 active:scale-95',
+      'text-white shadow-[0_0_12px_2px_rgba(255,96,64,0.4)] hover:shadow-[0_0_20px_6px_rgba(255,80,144,0.5)] active:scale-95',
     ghost:
       'border border-p0/40 text-p1 hover:border-p0 hover:bg-p0/10 active:scale-95',
   }
+
+  const primaryStyle = variant === 'primary'
+    ? { background: 'linear-gradient(135deg, #FF6040, #FF5090)', ...style }
+    : style
 
   return (
     <button
       ref={ref}
       className={`${base} ${variants[variant]} ${className}`}
+      style={primaryStyle}
       onClick={handleClick}
       {...props}
     >

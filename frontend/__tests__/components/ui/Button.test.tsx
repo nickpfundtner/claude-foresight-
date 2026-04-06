@@ -18,4 +18,10 @@ describe('Button', () => {
     render(<Button disabled>Nope</Button>)
     expect(screen.getByRole('button')).toBeDisabled()
   })
+
+  it('primary button has gradient background style', () => {
+    const { getByRole } = render(<Button>Save</Button>)
+    const btn = getByRole('button')
+    expect(btn).toHaveStyle('background: linear-gradient(135deg, #FF6040, #FF5090)')
+  })
 })
