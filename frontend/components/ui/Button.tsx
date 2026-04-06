@@ -10,6 +10,7 @@ export default function Button({ variant = 'primary', className = '', style, onC
   const ref = useRef<HTMLButtonElement>(null)
 
   function handleClick(e: React.MouseEvent<HTMLButtonElement>) {
+    if (props.disabled) return
     sounds.click()
     // Ripple
     const btn = ref.current

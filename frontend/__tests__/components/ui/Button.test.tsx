@@ -24,4 +24,16 @@ describe('Button', () => {
     const btn = getByRole('button')
     expect(btn).toHaveStyle('background: linear-gradient(135deg, #FF6040, #FF5090)')
   })
+
+  it('does not call onClick when disabled', () => {
+    const fn = jest.fn()
+    render(<Button disabled onClick={fn}>Nope</Button>)
+    fireEvent.click(screen.getByRole('button'))
+    expect(fn).not.toHaveBeenCalled()
+  })
+
+  it('ghost variant renders with border class', () => {
+    const { getByRole } = render(<Button variant="ghost">Ghost</Button>)
+    expect(getByRole('button').className).toContain('border')
+  })
 })
