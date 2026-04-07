@@ -53,7 +53,7 @@ jobs:
           ENVIRONMENT: test
         run: |
           cd backend
-          pytest --tb=short -q
+          pytest --tb=long -v 2>&1 | tail -60
 
   frontend-build:
     name: Frontend Build Check
