@@ -1,9 +1,10 @@
+import os
 import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from app.database import Base
 
-TEST_DATABASE_URL = "postgresql://cipuser:cippass@localhost:5432/cip_test"
+TEST_DATABASE_URL = os.getenv("TEST_DATABASE_URL", "postgresql://cipuser:cippass@localhost:5432/cip_test")
 
 @pytest.fixture(scope="session")
 def test_engine():
