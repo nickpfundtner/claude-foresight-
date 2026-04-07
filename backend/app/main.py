@@ -1,5 +1,6 @@
 from contextlib import asynccontextmanager
 import os
+import sentry_sdk
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -12,6 +13,14 @@ from app.predictions.router import router as predictions_router
 from app.dashboard.router import router as dashboard_router
 from app.predictions.scheduler import start_scheduler
 from app.outreach.router import router as outreach_router
+
+
+if _sentry_dsn := os.getenv("SENTRY_DSN"):
+    sentry_sdk.init(
+        dsn=_sentry_dsn,
+        environment=os.getenv("ENVIRONMENT", "development"),
+        traces_sample_rate=0.2,
+    )
 
 
 @asynccontextmanager

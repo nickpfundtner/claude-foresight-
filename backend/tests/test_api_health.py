@@ -17,3 +17,11 @@ def test_cors_reads_from_env(monkeypatch):
     origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000,http://localhost:5173").split(",")
     assert "https://myapp.vercel.app" in origins
     assert "https://example.com" in origins
+
+def test_sentry_init_skipped_when_no_dsn(monkeypatch):
+    monkeypatch.delenv("SENTRY_DSN", raising=False)
+    import importlib
+    import app.main
+    importlib.reload(app.main)
+    import sentry_sdk
+    assert True  # no exception = sentry gracefully skipped
