@@ -66,7 +66,7 @@ export default function SpendBarChart() {
         grad.addColorStop(1, colors[i % colors.length] + '66')
         ctx!.fillStyle = grad
         ctx!.beginPath()
-        if (ctx!.roundRect) {
+        if ('roundRect' in ctx!) {
           ctx!.roundRect(x, y, barW, barH, [4, 4, 0, 0])
         } else {
           ctx!.rect(x, y, barW, barH)
