@@ -8,7 +8,7 @@ python-jose[cryptography]==3.3.0
 passlib[bcrypt]==1.7.4
 python-multipart==0.0.9
 httpx==0.27.0
-square==37.0.0
+squareup==44.0.1.20260122
 anthropic==0.26.0
 apscheduler==3.10.4
 pytz==2024.1
