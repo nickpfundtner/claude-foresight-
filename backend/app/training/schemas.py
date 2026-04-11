@@ -35,3 +35,11 @@ class CompleteModuleResponse(BaseModel):
 class FlagModuleResponse(BaseModel):
     module_id: str
     flagged: bool
+
+
+class MyProgressItem(BaseModel):
+    module_id: str
+    title: str
+    type: str
+    completed: bool
+    score: Optional[int] = None

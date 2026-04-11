@@ -151,4 +151,6 @@ def test_flag_module_returns_200():
 def test_training_routes_require_worker_token():
     client = TestClient(app)
     assert client.get("/training/my-track").status_code == 403
+    assert client.get("/training/my-progress").status_code == 403
     assert client.post(f"/training/modules/{FAKE_MODULE_ID}/complete", json={}).status_code == 403
+    assert client.post(f"/training/modules/{FAKE_MODULE_ID}/flag").status_code == 403

@@ -9,7 +9,7 @@ from app.models.training import (
 from app.training.schemas import (
     MyTrackResponse, ModuleItem,
     CompleteModuleRequest, CompleteModuleResponse,
-    FlagModuleResponse,
+    FlagModuleResponse, MyProgressItem,
 )
 
 router = APIRouter(prefix="/training", tags=["training"])
@@ -72,7 +72,7 @@ def my_track(
     )
 
 
-@router.get("/my-progress")
+@router.get("/my-progress", response_model=list[MyProgressItem])
 def my_progress(
     worker: Worker = Depends(get_current_worker),
     db: Session = Depends(get_db),
