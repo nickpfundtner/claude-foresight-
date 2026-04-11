@@ -3,6 +3,8 @@ import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from app.database import Base
+import app.models.worker  # noqa: F401
+import app.models.training  # noqa: F401
 
 TEST_DATABASE_URL = os.getenv("TEST_DATABASE_URL", "postgresql://cipuser:cippass@localhost:5432/cip_test")
 
