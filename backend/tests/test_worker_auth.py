@@ -76,5 +76,4 @@ def test_owner_login_still_works():
     finally:
         app.dependency_overrides.pop(get_db, None)
 
-    # Will 401 (no real user) but should not 422
-    assert response.status_code in (200, 401)
+    assert response.status_code == 401

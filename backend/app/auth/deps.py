@@ -1,8 +1,9 @@
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
-from jose import JWTError
+from jose import jwt, JWTError
 from app.database import get_db
+from app.config import settings
 from app.models.user import User
 from app.models.worker import Worker
 from app.auth.utils import decode_token, decode_token_role
@@ -29,8 +30,13 @@ def get_current_worker(
     db: Session = Depends(get_db),
 ) -> Worker:
     try:
-        user_id = decode_token(credentials.credentials)
-        role = decode_token_role(credentials.credentials)
+        payload = jwt.decode(
+            credentials.credentials,
+            settings.jwt_secret_key,
+            algorithms=[settings.jwt_algorithm],
+        )
+        user_id: str = payload["sub"]
+        role: str = payload.get("role", "owner")
     except JWTError:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
     if role != "worker":
