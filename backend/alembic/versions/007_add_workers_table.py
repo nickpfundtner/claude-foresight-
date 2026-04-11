@@ -26,12 +26,15 @@ def upgrade() -> None:
         sa.Column('hashed_password', sa.String(), nullable=False),
         sa.Column('role_name', sa.String(), nullable=False),
         sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.func.now()),
+        sa.Column('updated_at', sa.DateTime(timezone=True), nullable=True),
     )
     op.create_index('ix_workers_business_id', 'workers', ['business_id'])
-    op.create_index('ix_workers_email', 'workers', ['email'], unique=True)
+    op.create_index('ix_workers_email', 'workers', ['email'])
+    op.create_unique_constraint('uq_workers_business_email', 'workers', ['business_id', 'email'])
 
 
 def downgrade() -> None:
+    op.drop_constraint('uq_workers_business_email', 'workers', type_='unique')
     op.drop_index('ix_workers_email', table_name='workers')
     op.drop_index('ix_workers_business_id', table_name='workers')
     op.drop_table('workers')
