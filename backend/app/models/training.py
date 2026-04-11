@@ -1,5 +1,5 @@
 import uuid
-from sqlalchemy import Column, String, DateTime, Integer, ForeignKey
+from sqlalchemy import Column, String, DateTime, Integer, ForeignKey, UniqueConstraint
 from sqlalchemy.dialects.postgresql import UUID, JSON
 from sqlalchemy.sql import func
 from app.database import Base
@@ -45,6 +45,7 @@ class WorkerProgress(Base):
     module_id = Column(UUID(as_uuid=True), ForeignKey("training_modules.id", ondelete="CASCADE"), nullable=False)
     score = Column(Integer, nullable=True)  # null for non-quiz; 0-100 for quizzes
     completed_at = Column(DateTime(timezone=True), server_default=func.now())
+    __table_args__ = (UniqueConstraint("worker_id", "module_id", name="uq_worker_progress_worker_module"),)
 
 
 class ModuleFlag(Base):

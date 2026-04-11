@@ -27,8 +27,8 @@ def create_worker(
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    if db.query(Worker).filter(Worker.email == body.email).first():
-        raise HTTPException(status_code=400, detail="Email already in use")
+    if db.query(Worker).filter(Worker.email == body.email, Worker.business_id == user.id).first():
+        raise HTTPException(status_code=400, detail="Email already in use for this business")
     worker = Worker(
         business_id=user.id,
         name=body.name,

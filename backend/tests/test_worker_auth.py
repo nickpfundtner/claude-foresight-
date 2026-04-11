@@ -25,6 +25,7 @@ def test_worker_login_returns_token():
     worker = _fake_worker()
     mock_db = MagicMock()
     mock_db.query.return_value.filter.return_value.first.return_value = worker
+    mock_db.query.return_value.filter.return_value.count.return_value = 0
 
     app.dependency_overrides[get_db] = lambda: mock_db
     try:
@@ -48,6 +49,7 @@ def test_worker_login_wrong_password():
     worker = _fake_worker()
     mock_db = MagicMock()
     mock_db.query.return_value.filter.return_value.first.return_value = worker
+    mock_db.query.return_value.filter.return_value.count.return_value = 0
 
     app.dependency_overrides[get_db] = lambda: mock_db
     try:

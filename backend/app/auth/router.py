@@ -31,9 +31,16 @@ def _check_brute_force(db: Session, email: str) -> None:
 
 
 def _worker_login(db: Session, email: str, password: str) -> TokenResponse:
+    _check_brute_force(db, email)
     worker = db.query(Worker).filter(Worker.email == email).first()
     if not worker or not verify_password(password, worker.hashed_password):
+        log_error(
+            db, "auth_login", Exception("invalid credentials"),
+            user_id=worker.id if worker else None,
+            context={"email": email},
+        )
         raise HTTPException(status_code=401, detail="Invalid credentials")
+    resolve_errors_by_email(db, "auth_login", email=email)
     token = create_access_token(str(worker.id), role="worker")
     return TokenResponse(
         access_token=token,
