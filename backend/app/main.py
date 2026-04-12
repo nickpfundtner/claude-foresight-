@@ -13,6 +13,8 @@ from app.predictions.router import router as predictions_router
 from app.dashboard.router import router as dashboard_router
 from app.predictions.scheduler import start_scheduler
 from app.outreach.router import router as outreach_router
+from app.staff.router import router as staff_router
+from app.training.router import router as training_router
 
 
 if _sentry_dsn := os.getenv("SENTRY_DSN"):
@@ -71,6 +73,8 @@ app.include_router(square_router)
 app.include_router(predictions_router)
 app.include_router(dashboard_router)
 app.include_router(outreach_router)
+app.include_router(staff_router)
+app.include_router(training_router)
 
 
 @app.get("/health")
