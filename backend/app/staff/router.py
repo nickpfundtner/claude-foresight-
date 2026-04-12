@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy import func as sa_func
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.auth.deps import get_current_user
@@ -76,6 +77,36 @@ def list_tracks(
 ):
     tracks = db.query(TrainingTrack).filter(TrainingTrack.business_id == user.id).all()
     return [TrackResponse.from_orm(t) for t in tracks]
+
+
+@router.get("/tracks/{track_id}/modules", response_model=list[ModuleResponse])
+def list_modules(
+    track_id: str,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    track = db.query(TrainingTrack).filter(
+        TrainingTrack.id == track_id,
+        TrainingTrack.business_id == user.id,
+    ).first()
+    if not track:
+        raise HTTPException(status_code=404, detail="Track not found")
+
+    modules = db.query(TrainingModule).filter(
+        TrainingModule.track_id == track.id
+    ).order_by(TrainingModule.order).all()
+
+    if not modules:
+        return []
+
+    flag_counts = dict(
+        db.query(ModuleFlag.module_id, sa_func.count())
+        .filter(ModuleFlag.module_id.in_([m.id for m in modules]))
+        .group_by(ModuleFlag.module_id)
+        .all()
+    )
+
+    return [ModuleResponse.from_orm(m, flag_count=flag_counts.get(m.id, 0)) for m in modules]
 
 
 @router.get("/templates")
