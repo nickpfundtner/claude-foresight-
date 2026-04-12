@@ -8,6 +8,7 @@ import { useState } from 'react'
 const NAV = [
   { href: '/dashboard', label: 'Dashboard', icon: '▦' },
   { href: '/customers', label: 'Customers', icon: '◈' },
+  { href: '/staff/workers', label: 'Staff', icon: '◉' },
 ]
 
 export default function Sidebar() {
@@ -38,7 +39,10 @@ export default function Sidebar() {
       {/* Nav */}
       <nav className="flex-1 space-y-1">
         {NAV.map(({ href, label, icon }) => {
-          const active = pathname === href || pathname.startsWith(href + '/')
+          const active =
+            href === '/staff/workers'
+              ? pathname.startsWith('/staff')
+              : pathname === href || pathname.startsWith(href + '/')
           return (
             <Link
               key={href}
