@@ -10,7 +10,7 @@ import Toast from '@/components/ui/Toast'
 
 export default function RegisterPage() {
   const router = useRouter()
-  const setToken = useAuthStore((s) => s.setToken)
+  const setUser = useAuthStore((s) => s.setUser)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
@@ -21,12 +21,12 @@ export default function RegisterPage() {
     setLoading(true)
     try {
       const res = await api.post('/auth/register', { email, password })
-      const { access_token } = res.data
-      setToken(access_token)
+      const { access_token, role: returnedRole, name, role_name } = res.data
+      setUser(access_token, returnedRole ?? 'owner', name, role_name)
       await fetch('/api/auth/token', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token: access_token }),
+        body: JSON.stringify({ token: access_token, role: returnedRole ?? 'owner' }),
       })
       sounds.success()
       router.push('/connect')

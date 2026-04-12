@@ -8,9 +8,12 @@ import { sounds } from '@/lib/sound'
 import Button from '@/components/ui/Button'
 import Toast from '@/components/ui/Toast'
 
+type Role = 'owner' | 'worker'
+
 export default function LoginPage() {
   const router = useRouter()
-  const setToken = useAuthStore((s) => s.setToken)
+  const setUser = useAuthStore((s) => s.setUser)
+  const [role, setRole] = useState<Role>('owner')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
@@ -21,16 +24,16 @@ export default function LoginPage() {
     e.preventDefault()
     setLoading(true)
     try {
-      const res = await api.post('/auth/login', { username: email, password })
-      const { access_token } = res.data
-      setToken(access_token)
+      const res = await api.post('/auth/login', { email, password, role })
+      const { access_token, role: returnedRole, name, role_name } = res.data
+      setUser(access_token, returnedRole, name, role_name)
       await fetch('/api/auth/token', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token: access_token }),
+        body: JSON.stringify({ token: access_token, role: returnedRole }),
       })
       sounds.success()
-      router.push('/dashboard')
+      router.push(returnedRole === 'worker' ? '/training' : '/dashboard')
     } catch {
       sounds.error()
       setShake(true)
@@ -50,6 +53,25 @@ export default function LoginPage() {
         <h1 className="text-3xl font-black text-p0 tracking-tight mb-1">FORESIGHT</h1>
         <p className="text-muted text-sm">Sign in to your account</p>
       </div>
+
+      {/* Role toggle */}
+      <div className="flex bg-surface border border-white/10 rounded-lg p-1 gap-1">
+        {(['owner', 'worker'] as Role[]).map((r) => (
+          <button
+            key={r}
+            type="button"
+            onClick={() => setRole(r)}
+            className={`flex-1 py-2 rounded-md text-sm font-medium transition-all ${
+              role === r
+                ? 'bg-p0/20 text-p1 border border-p0/30'
+                : 'text-muted hover:text-ftext'
+            }`}
+          >
+            {r === 'owner' ? "I'm an Owner" : "I'm a Worker"}
+          </button>
+        ))}
+      </div>
+
       <form onSubmit={handleSubmit} className="space-y-4">
         <input
           type="email"
@@ -71,10 +93,14 @@ export default function LoginPage() {
           {loading ? 'Signing in…' : 'Sign In'}
         </Button>
       </form>
-      <p className="text-center text-sm text-muted">
-        No account?{' '}
-        <Link href="/register" className="text-p1 hover:underline">Register</Link>
-      </p>
+
+      {role === 'owner' && (
+        <p className="text-center text-sm text-muted">
+          No account?{' '}
+          <Link href="/register" className="text-p1 hover:underline">Register</Link>
+        </p>
+      )}
+
       {toast && (
         <Toast message={toast.msg} type={toast.type} onClose={() => setToast(null)} />
       )}
