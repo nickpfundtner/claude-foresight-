@@ -25,6 +25,14 @@ import app.models  # noqa: F401 — ensure all models are imported
 
 target_metadata = Base.metadata
 
+# Override sqlalchemy.url with DATABASE_URL env var if set (e.g. Railway)
+database_url = os.environ.get("DATABASE_URL")
+if database_url:
+    # Railway provides postgres:// but SQLAlchemy requires postgresql://
+    if database_url.startswith("postgres://"):
+        database_url = database_url.replace("postgres://", "postgresql://", 1)
+    config.set_main_option("sqlalchemy.url", database_url)
+
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
 # my_important_option = config.get_main_option("my_important_option")
